@@ -146,3 +146,49 @@ print("\nShape after cleaning:", df.shape)
 
 print("\nMissing values after cleaning:")
 print(df.isnull().sum())
+
+# ==========================================================
+# 3. CREATE TARGET VARIABLE
+# ==========================================================
+
+# Significant disruption = delay of 7 or more days
+df["disruption"] = (
+    df["delay_days"] >= 7
+).astype(int)
+
+
+# ==========================================================
+# 4. FEATURE SELECTION
+# ==========================================================
+
+features = [
+    "supplier_id",
+    "product",
+    "origin",
+    "destination",
+    "order_quantity",
+    "inventory_level",
+    "historical_lead_time",
+    "current_lead_time",
+    "supplier_reliability",
+    "weather_risk",
+    "transportation_mode",
+    "previous_delays"
+]
+
+X = df[features].copy()
+
+
+# Convert categorical variables to category type
+
+categorical_features = [
+    "supplier_id",
+    "product",
+    "origin",
+    "destination",
+    "transportation_mode"
+]
+
+for col in categorical_features:
+    X[col] = X[col].astype("category")
+
