@@ -55,7 +55,7 @@ numeric_columns = df.select_dtypes(
 categorical_columns = df.select_dtypes(
     include=["object"]
 ).columns
-
+ 
 # Numerical columns -> median
 for col in numeric_columns:
     df[col] = df[col].fillna(df[col].median())
