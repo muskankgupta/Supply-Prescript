@@ -1,0 +1,4 @@
+supplier_reliability,shipment_count,average_delay
+Low Reliability,38673,4.0
+Medium Reliability,36680,3.66
+High Reliability,34647,3.29

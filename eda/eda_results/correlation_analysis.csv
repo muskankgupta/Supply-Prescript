@@ -1,0 +1,8 @@
+,delay_days
+current_lead_time,0.381
+weather_risk,0.293
+previous_delays,0.257
+historical_lead_time,0.005
+inventory_level,0.004
+order_quantity,0.003
+supplier_reliability,-0.091

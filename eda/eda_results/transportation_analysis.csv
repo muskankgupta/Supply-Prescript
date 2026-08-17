@@ -1,0 +1,5 @@
+transportation_mode,shipment_count,delayed_shipments,average_delay,maximum_delay,delay_rate_%
+Sea,38298,25438,3.97,15,66.42
+Road,27703,16778,3.61,16,60.56
+Rail,11134,6629,3.57,15,59.54
+Air,32865,18462,3.37,15,56.18

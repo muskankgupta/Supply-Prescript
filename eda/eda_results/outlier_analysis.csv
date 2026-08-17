@@ -1,0 +1,6 @@
+column,Q1,Q3,IQR,lower_bound,upper_bound,outlier_count,outlier_percentage
+order_quantity,1288.0,3769.0,2481.0,-2433.5,7490.5,0,0.0
+inventory_level,2588.75,7537.0,4948.25,-4833.625,14959.375,0,0.0
+historical_lead_time,9.0,23.0,14.0,-12.0,44.0,0,0.0
+current_lead_time,17.0,31.0,14.0,-4.0,52.0,1,0.0
+delay_days,0.0,6.0,6.0,-9.0,15.0,2,0.0
