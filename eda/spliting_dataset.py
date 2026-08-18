@@ -44,8 +44,6 @@ test_df.to_csv(
     TEST_PATH,
     index=False
 )
-print("\nDataset split completed.")
-
 print("\nTraining dataset:")
 print(f"Rows    : {len(train_df):,}")
 print(f"Columns : {len(train_df.columns)}")
@@ -81,9 +79,9 @@ print("\nShipment ID overlap:")
 print(len(overlap))
 
 if len(overlap) == 0:
-    print("✓ No shipment IDs overlap.")
+    print(" No shipment IDs overlap.")
 else:
-    print("⚠ WARNING: Shipment IDs overlap.")
+    print(" WARNING: Shipment IDs overlap.")
     print("\nFiles created:")
 
 print(f"Training: {TRAIN_PATH}")
@@ -115,9 +113,9 @@ missing_table = pd.DataFrame({
 print(missing_table.to_string(index=False))
 
 if missing_values.sum() == 0:
-    print("\n✓ No missing values found.")
+    print("\n No missing values found.")
 else:
-    print("\n⚠ Missing values detected.")
+    print("\n Missing values detected.")
 
 print("5. DUPLICATE SHIPMENT IDs")
 duplicate_shipments = df["shipment_id"].duplicated().sum()
@@ -125,9 +123,9 @@ duplicate_shipments = df["shipment_id"].duplicated().sum()
 print(f"Duplicate shipment IDs: {duplicate_shipments}")
 
 if duplicate_shipments == 0:
-    print("✓ Shipment IDs are unique.")
+    print("Shipment IDs are unique.")
 else:
-    print("⚠ Duplicate shipment IDs found.")
+    print("Duplicate shipment IDs found.")
 
 print("6. NUMERICAL SUMMARY")
 numeric_columns = df.select_dtypes(
