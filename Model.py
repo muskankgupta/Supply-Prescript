@@ -192,3 +192,52 @@ categorical_features = [
 for col in categorical_features:
     X[col] = X[col].astype("category")
 
+
+# ==========================================================
+# 5. CLASSIFICATION MODEL
+#    Predict probability of disruption
+# ==========================================================
+
+y_class = df["disruption"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y_class,
+    test_size=0.20,
+    random_state=42,
+    stratify=y_class
+)
+
+
+classifier = LGBMClassifier(
+    n_estimators=1000,
+    learning_rate=0.05,
+    num_leaves=31,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    random_state=42,
+    n_jobs=-1
+)
+
+
+classifier.fit(
+    X_train,
+    y_train,
+    categorical_feature=categorical_features,
+    eval_set=[(X_test, y_test)],
+    callbacks=[
+        early_stopping(50, verbose=False)
+    ]
+)
+
+
+# Probability of disruption
+
+disruption_probability = classifier.predict_proba(
+    X_test
+)[:, 1]
+
+disruption_prediction = (
+    disruption_probability >= 0.50
+).astype(int)
+
