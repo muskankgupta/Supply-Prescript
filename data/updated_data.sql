@@ -1,4 +1,3 @@
-USE supply_prescript;
 
 UPDATE shipments
 SET product = 'Microchip'
@@ -17,7 +16,7 @@ INSERT INTO recommendations (
     cost,
     expected_delay,
     risk,
-    rank_order
+    rank
 )
 VALUES
 ('R001', 'SH1023', 'Air Freight', 15000, 2, 'Low', 1),
@@ -51,7 +50,7 @@ SELECT
     r.cost,
     r.expected_delay,
     r.risk,
-    r.rank_order,
+    r.rank,
     d.selected_action,
     d.decision_status
 FROM shipments s
@@ -62,4 +61,4 @@ LEFT JOIN recommendations r
 LEFT JOIN decisions d
     ON r.recommendation_id = d.recommendation_id
 WHERE s.shipment_id = 'SH1023'
-ORDER BY r.rank_order;
+ORDER BY r.rank;
