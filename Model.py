@@ -1,5 +1,12 @@
+# ============================================================
+# PROJECT 3 - SUPPLY PRESCRIPT
+# PREDICTIVE MODEL USING CSV DATASET
+# ============================================================
+
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import joblib
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
@@ -8,29 +15,61 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
+    confusion_matrix,
+    classification_report,
+    roc_curve,
     mean_absolute_error,
     mean_squared_error,
     r2_score
 )
 
-from lightgbm import LGBMClassifier, LGBMRegressor, early_stopping
+from lightgbm import (
+    LGBMClassifier,
+    LGBMRegressor,
+    early_stopping
+)
 
-# ==========================================================
-# 1. LOAD DATA
-# ==========================================================
 
-df = pd.read_csv("supply_chain_dataset.csv")
+# ============================================================
+# 1. LOAD CSV DATASET
+# ============================================================
 
-print("Original shape:", df.shape)
-print("\nMissing values:")
+FILE_PATH = "supply_chain_dataset.csv"
+
+df = pd.read_csv(FILE_PATH)
+
+print("=" * 70)
+print("SUPPLY PRESCRIPT - PREDICTIVE MODEL")
+print("=" * 70)
+
+print("\nOriginal Dataset Shape:")
+print(df.shape)
+
+print("\nColumns:")
+print(df.columns.tolist())
+
+
+# ============================================================
+# 2. BASIC DATA INFORMATION
+# ============================================================
+
+print("\n" + "=" * 70)
+print("DATA INFORMATION")
+print("=" * 70)
+
+print("\nData Types:")
+print(df.dtypes)
+
+print("\nMissing Values:")
 print(df.isnull().sum())
 
-print("\nDuplicate rows:", df.duplicated().sum())
+print("\nDuplicate Rows:")
+print(df.duplicated().sum())
 
 
-# ==========================================================
-# 2. DATA CLEANING
-# ==========================================================
+# ============================================================
+# 3. DATA CLEANING
+# ============================================================
 
 # Remove duplicate records
 df = df.drop_duplicates()
@@ -43,9 +82,9 @@ if "Unnamed: 0" in df.columns:
     df = df.drop(columns=["Unnamed: 0"])
 
 
-# ----------------------------------------------------------
-# Handle missing values
-# ----------------------------------------------------------
+# ============================================================
+# 4. HANDLE MISSING VALUES
+# ============================================================
 
 numeric_columns = df.select_dtypes(
     include=["int64", "float64"]
@@ -54,276 +93,82 @@ numeric_columns = df.select_dtypes(
 categorical_columns = df.select_dtypes(
     include=["object"]
 ).columns
- 
+
+
 # Numerical columns -> median
 for col in numeric_columns:
-    df[col] = df[col].fillna(df[col].median())
+
+    if df[col].isnull().sum() > 0:
+        df[col] = df[col].fillna(
+            df[col].median()
+        )
+
 
 # Categorical columns -> mode
 for col in categorical_columns:
+
     if df[col].isnull().sum() > 0:
-        df[col] = df[col].fillna(df[col].mode()[0])
+        df[col] = df[col].fillna(
+            df[col].mode()[0]
+        )
 
 
-# ----------------------------------------------------------
-# Remove invalid numerical values
-# ----------------------------------------------------------
+# ============================================================
+# 5. REMOVE INVALID VALUES
+# ============================================================
 
-# Lead times should not be negative
 if "historical_lead_time" in df.columns:
-    df = df[df["historical_lead_time"] >= 0]
+
+    df = df[
+        df["historical_lead_time"] >= 0
+    ]
+
 
 if "current_lead_time" in df.columns:
-    df = df[df["current_lead_time"] >= 0]
 
-# Delay cannot be negative
+    df = df[
+        df["current_lead_time"] >= 0
+    ]
+
+
 if "delay_days" in df.columns:
-    df = df[df["delay_days"] >= 0]
 
-# Order quantity should be positive
+    df = df[
+        df["delay_days"] >= 0
+    ]
+
+
 if "order_quantity" in df.columns:
-    df = df[df["order_quantity"] > 0]
 
-# Inventory cannot be negative
+    df = df[
+        df["order_quantity"] > 0
+    ]
+
+
 if "inventory_level" in df.columns:
-    df = df[df["inventory_level"] >= 0]
 
+    df = df[
+        df["inventory_level"] >= 0
+    ]
 
-# ----------------------------------------------------------
-# Remove impossible reliability/risk values
-# ----------------------------------------------------------
 
 if "supplier_reliability" in df.columns:
+
     df = df[
-        (df["supplier_reliability"] >= 0) &
+        (df["supplier_reliability"] >= 0)
+        &
         (df["supplier_reliability"] <= 1)
     ]
 
+
 if "weather_risk" in df.columns:
+
     df = df[
-        (df["weather_risk"] >= 0) &
+        (df["weather_risk"] >= 0)
+        &
         (df["weather_risk"] <= 1)
     ]
 
 
-# ----------------------------------------------------------
-# Outlier treatment using IQR
-# ----------------------------------------------------------
-
-def cap_outliers(data, column):
-    Q1 = data[column].quantile(0.25)
-    Q3 = data[column].quantile(0.75)
-
-    IQR = Q3 - Q1
-
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
-
-    data[column] = data[column].clip(
-        lower=lower,
-        upper=upper
-    )
-
-    return data
-
-
-outlier_columns = [
-    "order_quantity",
-    "inventory_level",
-    "historical_lead_time",
-    "current_lead_time",
-    "previous_delays",
-    "delay_days"
-]
-
-for col in outlier_columns:
-    if col in df.columns:
-        df = cap_outliers(df, col)
-
-
-print("\nShape after cleaning:", df.shape)
-
-print("\nMissing values after cleaning:")
-print(df.isnull().sum())
-
-# ==========================================================
-# 3. CREATE TARGET VARIABLE
-# ==========================================================
-
-# Significant disruption = delay of 7 or more days
-df["disruption"] = (
-    df["delay_days"] >= 7
-).astype(int)
-
-
-# ==========================================================
-# 4. FEATURE SELECTION
-# ==========================================================
-
-features = [
-    "supplier_id",
-    "product",
-    "origin",
-    "destination",
-    "order_quantity",
-    "inventory_level",
-    "historical_lead_time",
-    "current_lead_time",
-    "supplier_reliability",
-    "weather_risk",
-    "transportation_mode",
-    "previous_delays"
-]
-
-X = df[features].copy()
-
-
-# Convert categorical variables to category type
-
-categorical_features = [
-    "supplier_id",
-    "product",
-    "origin",
-    "destination",
-    "transportation_mode"
-]
-
-for col in categorical_features:
-    X[col] = X[col].astype("category")
-
-
-# ==========================================================
-# 5. CLASSIFICATION MODEL
-#    Predict probability of disruption
-# ==========================================================
-
-y_class = df["disruption"]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y_class,
-    test_size=0.20,
-    random_state=42,
-    stratify=y_class
-)
-
-
-classifier = LGBMClassifier(
-    n_estimators=1000,
-    learning_rate=0.05,
-    num_leaves=31,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    random_state=42,
-    n_jobs=-1
-)
-
-
-classifier.fit(
-    X_train,
-    y_train,
-    categorical_feature=categorical_features,
-    eval_set=[(X_test, y_test)],
-    callbacks=[
-        early_stopping(50, verbose=False)
-    ]
-)
-
-
-# Probability of disruption
-
-disruption_probability = classifier.predict_proba(
-    X_test
-)[:, 1]
-
-disruption_prediction = (
-    disruption_probability >= 0.50
-).astype(int)
-
-
-# ==========================================================
-# 6. CLASSIFICATION EVALUATION
-# ==========================================================
-
-print("\n========== CLASSIFICATION RESULTS ==========")
-
-print(
-    "ROC-AUC:",
-    roc_auc_score(
-        y_test,
-        disruption_probability
-    )
-)
-
-print(
-    "Average Precision:",
-    average_precision_score(
-        y_test,
-        disruption_probability
-    )
-)
-
-print(
-    "Precision:",
-    precision_score(
-        y_test,
-        disruption_prediction
-    )
-)
-
-print(
-    "Recall:",
-    recall_score(
-        y_test,
-        disruption_prediction
-    )
-)
-
-print(
-    "F1 Score:",
-    f1_score(
-        y_test,
-        disruption_prediction
-    )
-)
-
-
-# ==========================================================
-# 7. DURATION REGRESSION MODEL
-#    Predict number of disruption days
-# ==========================================================
-
-y_duration = df["delay_days"]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y_duration,
-    test_size=0.20,
-    random_state=42
-)
-
-
-regressor = LGBMRegressor(
-    n_estimators=1000,
-    learning_rate=0.04,
-    num_leaves=31,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    random_state=42,
-    n_jobs=-1
-)
-
-
-regressor.fit(
-    X_train,
-    y_train,
-    categorical_feature=categorical_features,
-    eval_set=[(X_test, y_test)],
-    callbacks=[
-        early_stopping(50, verbose=False)
-    ]
-)
-
-
-predicted_duration = regressor.predict(X_test)
-
+print("\nShape After Cleaning:")
+print(df.shape)
