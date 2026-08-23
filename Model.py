@@ -240,3 +240,90 @@ disruption_prediction = (
     disruption_probability >= 0.50
 ).astype(int)
 
+
+# ==========================================================
+# 6. CLASSIFICATION EVALUATION
+# ==========================================================
+
+print("\n========== CLASSIFICATION RESULTS ==========")
+
+print(
+    "ROC-AUC:",
+    roc_auc_score(
+        y_test,
+        disruption_probability
+    )
+)
+
+print(
+    "Average Precision:",
+    average_precision_score(
+        y_test,
+        disruption_probability
+    )
+)
+
+print(
+    "Precision:",
+    precision_score(
+        y_test,
+        disruption_prediction
+    )
+)
+
+print(
+    "Recall:",
+    recall_score(
+        y_test,
+        disruption_prediction
+    )
+)
+
+print(
+    "F1 Score:",
+    f1_score(
+        y_test,
+        disruption_prediction
+    )
+)
+
+
+# ==========================================================
+# 7. DURATION REGRESSION MODEL
+#    Predict number of disruption days
+# ==========================================================
+
+y_duration = df["delay_days"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y_duration,
+    test_size=0.20,
+    random_state=42
+)
+
+
+regressor = LGBMRegressor(
+    n_estimators=1000,
+    learning_rate=0.04,
+    num_leaves=31,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    random_state=42,
+    n_jobs=-1
+)
+
+
+regressor.fit(
+    X_train,
+    y_train,
+    categorical_feature=categorical_features,
+    eval_set=[(X_test, y_test)],
+    callbacks=[
+        early_stopping(50, verbose=False)
+    ]
+)
+
+
+predicted_duration = regressor.predict(X_test)
+
