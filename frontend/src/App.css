@@ -1,177 +1,248 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f4f7fb;
-  color: #172033;
-}
-
-button {
-  font-family: inherit;
-}
-
 .app {
   min-height: 100vh;
+  background: #f5f7fa;
 }
 
-/* Header */
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .header {
   background: #111827;
   color: white;
-  padding: 24px 50px;
+
+  padding: 28px 9%;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  border-bottom: 1px solid #1f2937;
 }
 
 .header h1 {
-  font-size: 25px;
+  font-size: 28px;
   letter-spacing: 2px;
+  margin-bottom: 6px;
 }
 
 .header p {
-  margin-top: 6px;
-  color: #aeb8c8;
-  font-size: 14px;
+  color: #b8c4d6;
+  font-size: 15px;
 }
 
+
+/* =========================================================
+   REFRESH BUTTON
+   ========================================================= */
+
 .refresh-btn {
-  border: none;
   background: #2563eb;
   color: white;
-  padding: 11px 18px;
+
+  border: none;
   border-radius: 8px;
+
+  padding: 12px 20px;
+
+  font-size: 15px;
+  font-weight: 600;
+
   cursor: pointer;
-  font-size: 14px;
 }
 
 .refresh-btn:hover {
   background: #1d4ed8;
 }
 
-/* Dashboard */
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
 
 .dashboard {
+  width: 90%;
   max-width: 1250px;
-  margin: auto;
-  padding: 40px;
+
+  margin: 0 auto;
+
+  padding: 42px 0 80px;
 }
 
-.page-title {
-  margin-bottom: 25px;
+
+/* =========================================================
+   INTRO
+   ========================================================= */
+
+.intro {
+  margin-bottom: 28px;
 }
 
-.page-title h2 {
-  font-size: 28px;
+.intro h2 {
+  font-size: 30px;
+  margin-bottom: 7px;
 }
 
-.page-title p {
-  margin-top: 7px;
-  color: #6b7280;
+.intro p {
+  color: #64748b;
+  font-size: 16px;
 }
 
-/* Summary */
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin-bottom: 30px;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 20px;
+
+  margin-bottom: 36px;
 }
 
 .summary-card {
   background: white;
+
   border-radius: 12px;
-  padding: 22px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+
+  padding: 24px 26px;
+
+  box-shadow:
+    0 4px 15px rgba(15, 23, 42, 0.06);
+
   border-left: 4px solid #2563eb;
 }
 
-.summary-card.warning {
+.summary-card.danger {
   border-left-color: #ef4444;
 }
 
 .summary-card span {
   display: block;
-  color: #6b7280;
+
+  color: #64748b;
+
   font-size: 14px;
+
   margin-bottom: 12px;
 }
 
 .summary-card strong {
-  font-size: 27px;
+  font-size: 28px;
 }
 
-.summary-card .status {
+.summary-card .online {
   color: #16a34a;
   font-size: 20px;
 }
 
-/* Alerts */
 
-.alerts h2 {
-  margin-bottom: 18px;
+/* =========================================================
+   SHIPMENTS
+   ========================================================= */
+
+.shipments-section h2 {
+  font-size: 25px;
+  margin-bottom: 20px;
 }
+
+.shipment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+
+/* =========================================================
+   SHIPMENT CARD
+   ========================================================= */
 
 .shipment-card {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 18px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+
+  border-radius: 14px;
+
+  padding: 26px;
+
+  box-shadow:
+    0 5px 18px rgba(15, 23, 42, 0.07);
 }
+
+
+/* =========================================================
+   SHIPMENT HEADER
+   ========================================================= */
 
 .shipment-header {
   display: flex;
+
   justify-content: space-between;
   align-items: flex-start;
+
+  padding-bottom: 20px;
+
   border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 18px;
 }
 
 .shipment-header h3 {
-  font-size: 19px;
+  font-size: 20px;
+
+  margin-bottom: 5px;
 }
 
-.shipment-header p {
-  margin-top: 5px;
-  color: #6b7280;
+.product {
+  color: #64748b;
 }
 
-.risk {
-  padding: 6px 12px;
+
+/* =========================================================
+   RISK BADGES
+   ========================================================= */
+
+.risk-badge {
+  padding: 7px 15px;
+
   border-radius: 20px;
+
   font-size: 12px;
-  font-weight: bold;
+
+  font-weight: 700;
 }
 
-.risk.high {
+.risk-badge.low {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.risk-badge.medium {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.risk-badge.high {
   background: #fee2e2;
   color: #b91c1c;
 }
 
-.risk.medium {
-  background: #fef3c7;
-  color: #92400e;
-}
 
-.risk.low {
-  background: #dcfce7;
-  color: #166534;
-}
-
-/* Details */
+/* =========================================================
+   SHIPMENT DETAILS
+   ========================================================= */
 
 .shipment-details {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  padding: 20px 0;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 24px;
+
+  padding: 22px 0;
 }
 
 .shipment-details div {
@@ -181,84 +252,338 @@ button {
 }
 
 .shipment-details span {
-  color: #6b7280;
+  color: #64748b;
+
   font-size: 12px;
-  text-transform: uppercase;
 }
 
 .shipment-details strong {
   font-size: 14px;
 }
 
-/* Alert message */
 
-.alert-message {
-  background: #fff7ed;
-  color: #9a3412;
-  padding: 13px;
-  border-radius: 7px;
+/* =========================================================
+   RISK MESSAGE
+   ========================================================= */
+
+.risk-message {
+  padding: 14px 16px;
+
+  border-radius: 8px;
+
   font-size: 14px;
+
+  margin-bottom: 28px;
 }
 
-/* Loading */
-
-.loading,
-.empty {
-  background: white;
-  padding: 35px;
-  text-align: center;
-  border-radius: 12px;
-  color: #6b7280;
+.risk-message.low {
+  background: #f0fdf4;
+  color: #15803d;
 }
 
-/* Error */
-
-.error-box {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 25px;
+.risk-message.medium {
+  background: #fff7ed;
+  color: #c2410c;
 }
 
-.error-box p {
+.risk-message.high {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+
+/* =========================================================
+   DAY 6
+   ========================================================= */
+
+.prescription-section {
+  border-top: 1px solid #e5e7eb;
+
+  padding-top: 25px;
+
   margin-top: 5px;
 }
 
-/* Responsive */
-
-@media (max-width: 900px) {
-  .summary-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .shipment-details {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.section-heading {
+  margin-bottom: 18px;
 }
 
-@media (max-width: 600px) {
-  .header {
-    padding: 20px;
-  }
+.section-heading h4 {
+  font-size: 21px;
+  margin-bottom: 5px;
+}
 
-  .header h1 {
-    font-size: 18px;
-  }
+.section-heading p {
+  color: #64748b;
+  font-size: 14px;
+}
 
-  .dashboard {
-    padding: 20px;
-  }
 
-  .summary-grid {
+/* =========================================================
+   RECOMMENDATION GRID
+   ========================================================= */
+
+.recommendation-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 18px;
+}
+
+
+/* =========================================================
+   RECOMMENDATION CARD
+   ========================================================= */
+
+.recommendation-card {
+  border: 1px solid #e2e8f0;
+
+  border-radius: 10px;
+
+  padding: 20px;
+
+  background: #fafcff;
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.09);
+}
+
+.option {
+  font-size: 11px;
+
+  font-weight: 700;
+
+  color: #64748b;
+
+  letter-spacing: 1px;
+}
+
+.recommendation-card h5 {
+  font-size: 17px;
+
+  margin: 12px 0 18px;
+}
+
+
+/* =========================================================
+   RECOMMENDATION INFO
+   ========================================================= */
+
+.recommendation-info {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin-bottom: 20px;
+}
+
+.recommendation-info div {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+}
+
+.recommendation-info span {
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.recommendation-info strong {
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   RISK TEXT
+   ========================================================= */
+
+.risk-text.low {
+  color: #15803d;
+}
+
+.risk-text.medium {
+  color: #b45309;
+}
+
+.risk-text.high {
+  color: #b91c1c;
+}
+
+
+/* =========================================================
+   EXECUTE BUTTON
+   ========================================================= */
+
+.execute-btn {
+  width: 100%;
+
+  background: #111827;
+
+  color: white;
+
+  border: none;
+
+  border-radius: 7px;
+
+  padding: 11px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  letter-spacing: 0.5px;
+}
+
+.execute-btn:hover {
+  background: #2563eb;
+}
+
+
+/* =========================================================
+   NO RECOMMENDATIONS
+   ========================================================= */
+
+.no-recommendations {
+  background: #f8fafc;
+
+  border: 1px dashed #cbd5e1;
+
+  border-radius: 8px;
+
+  padding: 20px;
+
+  color: #64748b;
+
+  text-align: center;
+}
+/* #chartvsspeed representation */
+.cost-speed-chart {
+  width: 100%;
+  height: 420px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 12px;
+
+  padding: 15px;
+
+  margin-top: 20px;
+}
+
+.chart-options {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 15px;
+
+  margin-top: 20px;
+}
+
+.chart-option {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 8px;
+}
+
+.chart-option-number {
+  font-size: 10px;
+
+  font-weight: 700;
+
+  color: #64748b;
+
+  white-space: nowrap;
+}
+
+.chart-option-details {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  flex: 1;
+}
+
+.chart-option-details strong {
+  font-size: 13px;
+
+  color: #172033;
+}
+
+.chart-option-details span {
+  font-size: 12px;
+
+  color: #64748b;
+}
+
+.chart-risk {
+  font-size: 11px;
+
+  font-weight: 700;
+
+  padding: 5px 8px;
+
+  border-radius: 12px;
+}
+
+.chart-risk.low {
+  color: #15803d;
+
+  background: #dcfce7;
+}
+
+.chart-risk.medium {
+  color: #b45309;
+
+  background: #fef3c7;
+}
+
+.chart-risk.high {
+  color: #b91c1c;
+
+  background: #fee2e2;
+}
+
+@media (max-width: 850px) {
+
+  .chart-options {
     grid-template-columns: 1fr;
   }
 
-  .shipment-details {
-    grid-template-columns: 1fr;
+  .cost-speed-chart {
+    height: 350px;
   }
 
-  .shipment-header {
-    gap: 15px;
-  }
 }

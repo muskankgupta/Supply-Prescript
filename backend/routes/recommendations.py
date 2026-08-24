@@ -1,14 +1,9 @@
 from fastapi import APIRouter, HTTPException
-
 from backend.database import get_connection
-
-
 router = APIRouter(
     prefix="/recommendations",
     tags=["Recommendations"],
 )
-
-
 @router.get("/")
 def get_recommendations():
     connection = None

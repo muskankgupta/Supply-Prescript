@@ -30,11 +30,12 @@ def generate_recommendations(
         })
 
     return recommendations
-shipment = {
-    "shipment_id": "SH1023",
-    "delay_probability": 0.87
-}
+#example usage:
+# shipment = {
+#     "shipment_id": "SH1023",
+#     "delay_probability": 0.87
+# }
 
-recommendations = generate_recommendations(shipment)
+# recommendations = generate_recommendations(shipment)
 
-print(recommendations)
+# print(recommendations)
