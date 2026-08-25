@@ -172,3 +172,98 @@ if "weather_risk" in df.columns:
 
 print("\nShape After Cleaning:")
 print(df.shape)
+
+
+# ============================================================
+# 6. CREATE DISRUPTION TARGET
+# ============================================================
+
+# Disruption = 1 when delay_days > 0
+# Disruption = 0 when delay_days = 0
+
+df["disruption"] = (
+    df["delay_days"] > 0
+).astype(int)
+
+
+print("\n" + "=" * 70)
+print("DISRUPTION DISTRIBUTION")
+print("=" * 70)
+
+print(
+    df["disruption"].value_counts()
+)
+
+print("\nDisruption Percentage:")
+
+print(
+    (
+        df["disruption"]
+        .value_counts(normalize=True)
+        * 100
+    ).round(2)
+)
+
+
+# ============================================================
+# 7. SELECT FEATURES
+# ============================================================
+
+feature_columns = [
+
+    "supplier_id",
+
+    "product",
+
+    "origin",
+
+    "destination",
+
+    "order_quantity",
+
+    "inventory_level",
+
+    "historical_lead_time",
+
+    "current_lead_time",
+
+    "supplier_reliability",
+
+    "weather_risk",
+
+    "transportation_mode",
+
+    "previous_delays"
+
+]
+
+
+# Check missing features
+
+missing_features = [
+
+    col
+
+    for col in feature_columns
+
+    if col not in df.columns
+
+]
+
+
+if missing_features:
+
+    raise ValueError(
+        f"These columns are missing from the CSV: "
+        f"{missing_features}"
+    )
+
+
+print("\nFeatures Used:")
+
+for col in feature_columns:
+    print("-", col)
+
+
+
+
