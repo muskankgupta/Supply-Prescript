@@ -5,84 +5,93 @@ const API_URL = "http://127.0.0.1:8000";
 
 const recommendationTemplates = {
   Microchip: [
-    {
-      option: "Air Freight",
-      cost: 15000,
-      delay: 2,
-      risk: "Low",
-      score: 92,
-      description: "Fastest recovery option for critical inventory.",
-    },
-    {
-      option: "Secondary Supplier",
-      cost: 12000,
-      delay: 4,
-      risk: "Medium",
-      score: 78,
-      description: "Balanced option between cost and delivery speed.",
-    },
-    {
-      option: "Delay Product Launch",
-      cost: 2000,
-      delay: 14,
-      risk: "High",
-      score: 48,
-      description: "Lowest cost, but creates a significant delay.",
+  {
+  recommendation_id: "R001",
+  option: "Air Freight",
+  cost: 15000,
+  delay: 2,
+  risk: "Low",
+  score: 92,
+  description: "Fastest recovery option for critical inventory.",
+  },
+  {
+  recommendation_id: "R002",
+  option: "Secondary Supplier",
+  cost: 12000,
+  delay: 4,
+  risk: "Medium",
+  score: 78,
+  description: "Balanced option between cost and delivery speed.",
+  },
+  {
+  recommendation_id: "R003",
+  option: "Delay Product Launch",
+  cost: 2000,
+  delay: 14,
+  risk: "High",
+  score: 48,
+  description: "Lowest cost, but creates a significant delay.",
     },
   ],
 
   Monitor: [
     {
-      option: "Air Freight",
-      cost: 11000,
-      delay: 2,
-      risk: "Low",
-      score: 91,
-      description: "Quickest option for maintaining customer commitments.",
-    },
-    {
-      option: "Secondary Supplier",
-      cost: 8500,
-      delay: 5,
-      risk: "Medium",
-      score: 76,
-      description: "Good balance of operational cost and speed.",
-    },
-    {
-      option: "Delay Product Launch",
-      cost: 1800,
-      delay: 12,
-      risk: "High",
-      score: 46,
-      description: "Saves cost but introduces substantial delivery risk.",
-    },
+  recommendation_id: "R001",
+  option: "Air Freight",
+  cost: 11000,
+  delay: 2,
+  risk: "Low",
+  score: 91,
+  description: "Quickest option for maintaining customer commitments.",
+},
+{
+  recommendation_id: "R002",
+  option: "Secondary Supplier",
+  cost: 8500,
+  delay: 5,
+  risk: "Medium",
+  score: 76,
+  description: "Good balance of operational cost and speed.",
+},
+{
+  recommendation_id: "R003",
+  option: "Delay Product Launch",
+  cost: 1800,
+  delay: 12,
+  risk: "High",
+  score: 46,
+  description: "Saves cost but introduces substantial delivery risk.",
+},
   ],
 
   Keyboard: [
     {
-      option: "Air Freight",
-      cost: 9000,
-      delay: 2,
-      risk: "Low",
-      score: 89,
-      description: "Fast recovery for keyboard inventory shortages.",
-    },
-    {
-      option: "Secondary Supplier",
-      cost: 7000,
-      delay: 4,
-      risk: "Medium",
-      score: 74,
-      description: "Moderate cost with acceptable delivery speed.",
-    },
-    {
-      option: "Delay Product Launch",
-      cost: 1500,
-      delay: 10,
-      risk: "High",
-      score: 44,
-      description: "Cheapest option but significantly increases delay.",
-    },
+  recommendation_id: "R001",
+  option: "Air Freight",
+  cost: 9000,
+  delay: 2,
+  risk: "Low",
+  score: 89,
+  description: "Fast recovery for keyboard inventory shortages.",
+},
+{
+  recommendation_id: "R002",
+  option: "Secondary Supplier",
+  cost: 7000,
+  delay: 4,
+  risk: "Medium",
+  score: 74,
+  description: "Moderate cost with acceptable delivery speed.",
+},
+{
+  recommendation_id: "R003",
+  option: "Delay Product Launch",
+  cost: 1500,
+  delay: 10,
+  risk: "High",
+  score: 44,
+  description: "Cheapest option but significantly increases delay.",
+},
   ],
 };
 
@@ -173,7 +182,7 @@ function App() {
   const [activePage, setActivePage] = useState("dashboard");
   const [executedOption, setExecutedOption] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
-
+  const [lastExecutedDecision, setLastExecutedDecision] = useState(null);
   useEffect(() => {
     loadShipments();
   }, []);
@@ -245,14 +254,75 @@ function App() {
   ).length;
 
   const selectedRisk = getRisk(selectedShipment);
+async function executeDecision(recommendation) {
+  if (!selectedShipment) {
+    setError("Please select a shipment before executing a decision.");
+    return;
+  }
 
-  function executeDecision(option) {
-    setExecutedOption(option);
+  try {
+    setError("");
+
+    console.log("Executing decision:", {
+      shipment_id: selectedShipment.shipment_id,
+      product: selectedShipment.product,
+      recommendation_id: recommendation.recommendation_id,
+      selected_action: recommendation.option,
+    });
+
+    const response = await fetch(`${API_URL}/decisions/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        shipment_id: selectedShipment.shipment_id,
+        recommendation_id: recommendation.recommendation_id,
+        selected_action: recommendation.option,
+        predicted_cost: recommendation.cost,
+        predicted_delay: recommendation.delay,
+        decision_status: "EXECUTED",
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("Decision API status:", response.status);
+    console.log("Decision API response:", data);
+
+    if (!response.ok) {
+      throw new Error(
+        typeof data.detail === "string"
+          ? data.detail
+          : JSON.stringify(data.detail) || "Failed to execute decision."
+      );
+    }
+
+    console.log("Decision executed successfully:", data);
+
+    setLastExecutedDecision({
+      shipmentId: selectedShipment.shipment_id,
+      recommendation: recommendation.option,
+      recommendationId: recommendation.recommendation_id,
+    });
+
+    setExecutedOption(recommendation.option);
 
     setTimeout(() => {
       setExecutedOption(null);
     }, 3000);
+
+    // Refresh shipment/dashboard data
+    await loadShipments();
+
+  } catch (err) {
+    console.error("Decision execution failed:", err);
+
+    setError(
+      err.message || "Unable to execute decision."
+    );
   }
+}
 
   return (
     <div className="app-shell">
@@ -387,7 +457,55 @@ function App() {
             <button onClick={loadShipments}>Retry</button>
           </div>
         )}
+      {lastExecutedDecision && (
+        <div
+        style={{
+          marginBottom: "20px",
+          padding: "16px 20px",
+          borderRadius: "14px",
+          border: "1px solid rgba(74, 222, 128, 0.2)",
+          background: "rgba(74, 222, 128, 0.06)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "20px",
+      }}
+  >
+        <div>
+        <strong
+        style={{
+          display: "block",
+          color: "#4ade80",
+          fontSize: "12px",
+          marginBottom: "5px",
+        }}
+      >
+        ✓ DECISION EXECUTED
+      </strong>
 
+      <span
+        style={{
+          color: "var(--muted)",
+          fontSize: "10px",
+        }}
+      >
+        Shipment {lastExecutedDecision.shipmentId} →{" "}
+        {lastExecutedDecision.recommendation}
+      </span>
+    </div>
+
+    <span
+      style={{
+        color: "#4ade80",
+        fontSize: "9px",
+        fontWeight: 800,
+        letterSpacing: "0.8px",
+      }}
+    >
+      {lastExecutedDecision.recommendationId}
+    </span>
+  </div>
+)}
         {loading ? (
           <div className="loading-screen">
             <div className="loader"></div>
@@ -600,7 +718,7 @@ function App() {
                       index={index}
                       selected={index === 0}
                       executed={executedOption === recommendation.option}
-                      onExecute={() => executeDecision(recommendation.option)}
+                      onExecute={() => executeDecision(recommendation)}
                     />
                   ))}
                 </div>
@@ -723,7 +841,6 @@ function KpiCard({
     </div>
   );
 }
-
 /* -------------------------------- */
 /* DETAIL                           */
 /* -------------------------------- */

@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from backend.models import DecisionRequest, DecisionResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.routes.shipments import router as shipments_router
@@ -47,3 +48,22 @@ def health():
         "status": "ok",
         "database": "PostgreSQL",
     }
+@app.post("/decisions", response_model=DecisionResponse)
+def execute_decision(request: DecisionRequest):
+
+    try:
+        return DecisionResponse(
+            status="success",
+            message="Decision executed successfully",
+            shipment_id=request.shipment_id,
+            recommendation_id=request.recommendation_id,
+            selected_action=request.selected_action,
+            predicted_cost=request.predicted_cost,
+            predicted_delay=request.predicted_delay,
+        )
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to execute decision: {str(exc)}"
+        )

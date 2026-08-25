@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -9,3 +9,21 @@ class DecisionCreate(BaseModel):
     predicted_cost: Optional[float] = None
     predicted_delay: Optional[int] = None
     decision_status: str = "SELECTED"
+
+
+class DecisionRequest(BaseModel):
+    shipment_id: str = Field(..., min_length=1)
+    recommendation_id: str = Field(..., min_length=1)
+    selected_action: str = Field(..., min_length=1)
+    predicted_cost: float = 0.0
+    predicted_delay: float = 0.0
+
+
+class DecisionResponse(BaseModel):
+    status: str
+    message: str
+    shipment_id: str
+    recommendation_id: str
+    selected_action: str
+    predicted_cost: float
+    predicted_delay: float

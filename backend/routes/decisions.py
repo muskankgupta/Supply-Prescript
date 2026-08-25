@@ -104,7 +104,9 @@ def create_decision(decision: DecisionCreate):
         connection = get_connection()
         cursor = connection.cursor()
 
-        # Check that the shipment exists
+        # --------------------------------------------------
+        # 1. Check that shipment exists
+        # --------------------------------------------------
         cursor.execute("""
             SELECT shipment_id
             FROM shipments
@@ -119,32 +121,9 @@ def create_decision(decision: DecisionCreate):
                 detail="Shipment not found"
             )
 
-        # Check recommendation if one was provided
-        if decision.recommendation_id:
-
-            cursor.execute("""
-                SELECT
-                    recommendation_id,
-                    action,
-                    cost,
-                    expected_delay
-                FROM recommendations
-                WHERE recommendation_id = %s
-                  AND shipment_id = %s
-            """, (
-                decision.recommendation_id,
-                decision.shipment_id,
-            ))
-
-            recommendation = cursor.fetchone()
-
-            if recommendation is None:
-                raise HTTPException(
-                    status_code=404,
-                    detail="Recommendation not found for this shipment"
-                )
-
-        # Generate a new decision ID
+        # --------------------------------------------------
+        # 2. Generate a new decision ID
+        # --------------------------------------------------
         cursor.execute("""
             SELECT COUNT(*)
             FROM decisions
@@ -154,7 +133,9 @@ def create_decision(decision: DecisionCreate):
 
         decision_id = f"D{count + 1:03d}"
 
-        # Insert decision
+        # --------------------------------------------------
+        # 3. Insert decision
+        # --------------------------------------------------
         cursor.execute("""
             INSERT INTO decisions (
                 decision_id,
@@ -190,6 +171,12 @@ def create_decision(decision: DecisionCreate):
             "status": "success",
             "message": "Decision saved successfully",
             "decision_id": decision_id,
+            "shipment_id": decision.shipment_id,
+            "recommendation_id": decision.recommendation_id,
+            "selected_action": decision.selected_action,
+            "predicted_cost": decision.predicted_cost,
+            "predicted_delay": decision.predicted_delay,
+            "decision_status": decision.decision_status,
         }
 
     except HTTPException:
