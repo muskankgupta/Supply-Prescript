@@ -265,5 +265,37 @@ for col in feature_columns:
     print("-", col)
 
 
+# ============================================================
+# 8. PREPARE FEATURES
+# ============================================================
+
+X = df[feature_columns].copy()
+
+
+# Categorical columns
+
+categorical_features = [
+
+    "supplier_id",
+
+    "product",
+
+    "origin",
+
+    "destination",
+
+    "transportation_mode"
+
+]
+
+
+# Convert categorical columns
+# to pandas category datatype
+
+for col in categorical_features:
+
+    X[col] = X[col].astype("category")
+
+
 
 
