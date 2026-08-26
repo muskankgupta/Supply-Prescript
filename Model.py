@@ -123,7 +123,7 @@ if "historical_lead_time" in df.columns:
         df["historical_lead_time"] >= 0
     ]
 
-
+ 
 if "current_lead_time" in df.columns:
 
     df = df[
