@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import "./index.css";
 
 const API_URL = "http://127.0.0.1:8000";
-
 const recommendationTemplates = {
   Microchip: [
   {
@@ -180,13 +179,39 @@ function App() {
   const [error, setError] = useState("");
 
   const [activePage, setActivePage] = useState("dashboard");
+
+  const [decisions, setDecisions] = useState([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+
   const [executedOption, setExecutedOption] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [lastExecutedDecision, setLastExecutedDecision] = useState(null);
   useEffect(() => {
     loadShipments();
   }, []);
+  async function fetchDecisions() {
+  try {
+    setAnalyticsLoading(true);
 
+    const response = await fetch(`${API_URL}/decisions/`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch decisions");
+    }
+
+    const data = await response.json();
+
+    console.log("Decisions received:", data);
+
+    setDecisions(Array.isArray(data) ? data : []);
+
+  } catch (error) {
+    console.error("Failed to load decisions:", error);
+  } finally {
+    setAnalyticsLoading(false);
+  }
+}
   async function loadShipments() {
     try {
       setLoading(true);
@@ -230,7 +255,11 @@ function App() {
         String(selectedProduct).toLowerCase()
     );
   }, [shipments, selectedProduct]);
-
+    useEffect(() => {
+      if (showAnalytics) {
+        fetchDecisions();
+  }
+}, [showAnalytics]);
   useEffect(() => {
     if (productShipments.length > 0) {
       setSelectedShipment(productShipments[0]);
@@ -299,7 +328,6 @@ async function executeDecision(recommendation) {
     }
 
     console.log("Decision executed successfully:", data);
-
     setLastExecutedDecision({
       shipmentId: selectedShipment.shipment_id,
       recommendation: recommendation.option,
@@ -307,7 +335,7 @@ async function executeDecision(recommendation) {
     });
 
     setExecutedOption(recommendation.option);
-
+    await fetchDecisions();
     setTimeout(() => {
       setExecutedOption(null);
     }, 3000);
@@ -323,7 +351,43 @@ async function executeDecision(recommendation) {
     );
   }
 }
+const totalDecisions = decisions.length;
 
+const successfulDecisions = decisions.filter(
+  (decision) =>
+    decision.status?.toUpperCase() === "EXECUTED"
+).length;
+
+const successRate =
+  totalDecisions > 0
+    ? (successfulDecisions / totalDecisions) * 100
+    : 0;
+
+const averagePredictedCost =
+  totalDecisions > 0
+    ? decisions.reduce(
+        (sum, decision) =>
+          sum + Number(decision.predicted_cost || 0),
+        0
+      ) / totalDecisions
+    : 0;
+    const actionCounts = decisions.reduce((acc, decision) => {
+  const action = decision.selected_action || "Unknown";
+
+  acc[action] = (acc[action] || 0) + 1;
+
+  return acc;
+}, {});
+const actionUsage = Object.entries(actionCounts).map(
+  ([action, count]) => ({
+    action,
+    count,
+    percentage:
+      totalDecisions > 0
+        ? (count / totalDecisions) * 100
+        : 0,
+  })
+);
   return (
     <div className="app-shell">
       {/* SIDEBAR */}
@@ -344,7 +408,10 @@ async function executeDecision(recommendation) {
             className={`nav-item ${
               activePage === "dashboard" ? "active" : ""
             }`}
-            onClick={() => setActivePage("dashboard")}
+            onClick={() => {
+  setActivePage("dashboard");
+  setShowAnalytics(false);
+}}
           >
             <span className="nav-icon">⌂</span>
             <span>Dashboard</span>
@@ -374,7 +441,10 @@ async function executeDecision(recommendation) {
             className={`nav-item ${
               activePage === "analytics" ? "active" : ""
             }`}
-            onClick={() => setActivePage("analytics")}
+              onClick={() => {
+    setActivePage("analytics");
+    setShowAnalytics(true);
+  }}
           >
             <span className="nav-icon">▥</span>
             <span>Analytics</span>
@@ -513,6 +583,8 @@ async function executeDecision(recommendation) {
           </div>
         ) : (
           <>
+          {!showAnalytics && (
+            <>
             {/* DASHBOARD */}
             <section className="content">
               <div className="page-heading">
@@ -582,7 +654,7 @@ async function executeDecision(recommendation) {
               </div>
 
               {/* MAIN ANALYTICS GRID */}
-              <div className="analytics-grid">
+              <div className="analytics-cards-grid decision-analytics-grid">
                 {/* COST SPEED CHART */}
                 <section className="panel chart-panel">
                   <div className="panel-header">
@@ -607,7 +679,6 @@ async function executeDecision(recommendation) {
 
                   <CostSpeedChart recommendations={recommendations} />
                 </section>
-
                 {/* SELECTED SHIPMENT */}
                 <section className="panel shipment-panel">
                   <div className="panel-header">
@@ -803,6 +874,197 @@ async function executeDecision(recommendation) {
               </section>
             </section>
           </>
+        )}
+
+              {showAnalytics && (
+  <section className="analytics-dashboard">
+
+    <div className="analytics-header">
+      <div>
+        <h1>Decision Analytics</h1>
+        <p>
+          Track decision performance and business outcomes.
+        </p>
+      </div>
+
+      <button
+        onClick={fetchDecisions}
+        className="refresh-button"
+        disabled={analyticsLoading}
+      >
+        {analyticsLoading ? "Loading..." : "Refresh"}
+      </button>
+    </div>
+
+
+    {/* KPI CARDS */}
+
+    <div className="analytics-grid">
+
+      <div className="analytics-card">
+        <span>Total Decisions</span>
+        <strong>{totalDecisions}</strong>
+      </div>
+
+      <div className="analytics-card">
+        <span>Successful Decisions</span>
+        <strong>{successfulDecisions}</strong>
+      </div>
+
+      <div className="analytics-card">
+        <span>Success Rate</span>
+        <strong>
+          {successRate.toFixed(1)}%
+        </strong>
+      </div>
+
+      <div className="analytics-card">
+        <span>Average Predicted Cost</span>
+        <strong>
+          ${averagePredictedCost.toLocaleString(
+            undefined,
+            {
+              maximumFractionDigits: 0,
+            }
+          )}
+        </strong>
+      </div>
+
+    </div>
+
+
+    {/* DECISION SUMMARY */}
+
+    <div className="analytics-section">
+
+      <h2>Decision Performance</h2>
+
+      <div className="performance-box">
+
+        <div className="performance-row">
+          <span>Total Decisions</span>
+          <span>{totalDecisions}</span>
+        </div>
+
+        <div className="performance-row">
+          <span>Successful</span>
+          <span>{successfulDecisions}</span>
+        </div>
+
+        <div className="performance-row">
+          <span>Success Rate</span>
+          <span>{successRate.toFixed(1)}%</span>
+        </div>
+
+        <div className="performance-row">
+          <span>Average Predicted Cost</span>
+          <span>
+            ${averagePredictedCost.toLocaleString()}
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    {/* ACTION USAGE */}
+
+    <div className="analytics-section">
+
+      <h2>Actions Used</h2>
+
+      <div className="action-list">
+
+        {actionUsage.length === 0 ? (
+          <p>No decisions recorded yet.</p>
+        ) : (
+          actionUsage.map((item) => (
+            <div
+              className="action-row"
+              key={item.action}
+            >
+
+              <div className="action-info">
+                <span>{item.action}</span>
+                <span>
+                  {item.percentage.toFixed(1)}%
+                </span>
+              </div>
+
+              <div className="action-bar">
+                <div
+                  className="action-bar-fill"
+                  style={{
+                    width: `${item.percentage}%`,
+                  }}
+                />
+              </div>
+
+            </div>
+          ))
+        )}
+
+      </div>
+
+    </div>
+
+
+    {/* RECENT DECISIONS */}
+
+    <div className="analytics-section">
+
+      <h2>Recent Decisions</h2>
+
+      <div className="decision-table">
+
+        <div className="table-header">
+          <span>Shipment</span>
+          <span>Action</span>
+          <span>Cost</span>
+          <span>Status</span>
+        </div>
+
+        {decisions.slice(0, 10).map((decision) => (
+          <div
+            className="table-row"
+            key={decision.decision_id}
+          >
+
+            <span>
+              {decision.shipment_id}
+            </span>
+
+            <span>
+              {decision.selected_action}
+            </span>
+
+            <span>
+              ${Number(
+                decision.predicted_cost || 0
+              ).toLocaleString()}
+            </span>
+
+            <span
+              className={
+                decision.status === "EXECUTED"
+                  ? "status-success"
+                  : "status-pending"
+              }
+            >
+              {decision.status}
+            </span>
+
+          </div>
+        ))}
+
+      </div>
+
+    </div>
+
+  </section>
+)}
+</>
         )}
       </main>
     </div>
