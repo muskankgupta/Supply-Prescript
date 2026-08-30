@@ -48,7 +48,7 @@
 
   /* =================================
      TEXT
-     ================================= */
+
 
   --text: #f8fafc;
   --text-secondary: #d8e3eb;
@@ -132,19 +132,15 @@ select:focus-visible {
   min-height: 100vh;
 }
 
-/* ================================= */
 /* APP SHELL                          */
-/* ================================= */
+
 
 .app-shell {
   display: flex;
   min-height: 100vh;
 }
 
-/* ================================= */
 /* SIDEBAR                            */
-/* ================================= */
-
 .sidebar {
   position: fixed;
   top: 0;
@@ -325,9 +321,7 @@ select:focus-visible {
     0 0 12px rgba(74, 222, 128, 0.8);
 }
 
-/* ================================= */
 /* MAIN                               */
-/* ================================= */
 
 .main-area {
   width: calc(100% - 238px);
@@ -553,10 +547,7 @@ select:focus-visible {
   font-size: 12px;
 }
 
-/* ================================= */
 /* CONTENT                            */
-/* ================================= */
-
 .content {
   max-width: 1500px;
 
@@ -600,9 +591,8 @@ select:focus-visible {
   font-size: 12px;
 }
 
-/* ================================= */
 /* PRODUCT SELECTOR                   */
-/* ================================= */
+
 
 .product-selector {
   display: flex;
@@ -780,9 +770,8 @@ select:focus-visible {
   opacity: 0.12;
 }
 
-/* ================================= */
 /* ANALYTICS GRID                     */
-/* ================================= */
+
 
 .analytics-grid {
   display: grid;
@@ -833,300 +822,370 @@ select:focus-visible {
   line-height: 1.5;
 }
 
-/* ================================= */
 /* CHART                              */
-/* ================================= */
+/* =========================================================
+   NEW COST VS SPEED CHART
+   ========================================================= */
 
-.chart-panel {
-  min-height: 400px;
-}
-
-.chart-legend {
-  display: flex;
-  gap: 14px;
-
-  color: var(--muted);
-
-  font-size: 9px;
-}
-
-.chart-legend span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.chart-legend i {
-  width: 6px;
-  height: 6px;
-
-  border-radius: 50%;
-}
-
-.legend-purple {
-  background: var(--purple-light);
-  box-shadow: 0 0 8px var(--purple);
-}
-
-.legend-pink {
-  background: var(--pink);
-}
-
-.cost-speed-chart {
+.cost-speed-chart-new {
   position: relative;
+  
+  width: 100%;
+  height: 520px;
 
-  height: 300px;
+  margin-top: 20px;
+  padding: 25px;
 
-  margin: 10px 25px 25px;
+  box-sizing: border-box;
+
+  background: #75bed2 !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+
+  overflow: hidden;
 }
 
-.chart-y-label {
+
+/* =========================================================
+   Y AXIS TITLE
+   ========================================================= */
+
+.chart-y-title {
   position: absolute;
 
-  top: 18px;
-  left: 0;
+  left: 28px;
+  top: 50%;
 
-  color: var(--muted);
+  transform: rotate(-90deg) translateY(0%);
 
-  font-size: 8px;
-  font-weight: 700;
+  transform-origin: left center;
 
-  letter-spacing: 1px;
+  font-size: 20px;
+  font-weight: 800;
 
-  transform: rotate(-90deg);
-}
+  letter-spacing: 2px;
 
-.chart-area {
-  position: absolute;
-
-  left: 35px;
-  right: 10px;
-  top: 20px;
-  bottom: 35px;
-}
-
-.grid-line {
-  position: absolute;
-
-  opacity: 0.6;
-
-  border-color: rgba(255, 255, 255, 0.05);
-}
-
-.grid-line.horizontal {
-  left: 0;
-  right: 0;
-
-  border-top: 1px dashed rgba(255, 255, 255, 0.07);
-}
-
-.grid-line.horizontal.one {
-  top: 20%;
-}
-
-.grid-line.horizontal.two {
-  top: 40%;
-}
-
-.grid-line.horizontal.three {
-  top: 60%;
-}
-
-.grid-line.horizontal.four {
-  top: 80%;
-}
-
-.grid-line.vertical {
-  top: 0;
-  bottom: 0;
-
-  border-left: 1px dashed rgba(255, 255, 255, 0.06);
-}
-
-.grid-line.vertical.one {
-  left: 20%;
-}
-
-.grid-line.vertical.two {
-  left: 40%;
-}
-
-.grid-line.vertical.three {
-  left: 60%;
-}
-
-.grid-line.vertical.four {
-  left: 80%;
-}
-
-.axis-x {
-  position: absolute;
-
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  height: 1px;
-
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.axis-y {
-  position: absolute;
-
-  left: 0;
-  top: 0;
-  bottom: 0;
-
-  width: 1px;
-
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.axis-label {
-  position: absolute;
-
-  color: var(--muted-2);
-
-  font-size: 8px;
-  font-weight: 700;
-
-  letter-spacing: 0.8px;
-}
-
-.x-left {
-  left: 0;
-  bottom: -22px;
-}
-
-.x-right {
-  right: 0;
-  bottom: -22px;
-}
-
-.y-top {
-  top: -14px;
-  left: 5px;
-}
-
-.y-bottom {
-  bottom: -3px;
-  left: 5px;
-
-  transform: translateY(100%);
-}
-
-.chart-point {
-  position: absolute;
-
-  z-index: 3;
-}
-
-.point-dot {
-  display: block;
-
-  width: 14px;
-  height: 14px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      white 0%,
-      var(--purple-light) 25%,
-      var(--purple) 55%,
-      transparent 70%
-    );
-
-  box-shadow:
-    0 0 18px rgba(158, 216, 245, 0.8);
-}
-
-.point-1 .point-dot {
-  background:
-    radial-gradient(
-      circle,
-      white 0%,
-      #f9a8d4 25%,
-      #ec4899 55%,
-      transparent 70%
-    );
-
-  box-shadow:
-    0 0 18px rgba(236, 72, 153, 0.65);
-}
-
-.point-2 .point-dot {
-  background:
-    radial-gradient(
-      circle,
-      white 0%,
-      #fb7185 25%,
-      #e11d48 55%,
-      transparent 70%
-    );
-
-  box-shadow:
-    0 0 18px rgba(225, 29, 72, 0.55);
-}
-
-.point-label {
-  position: absolute;
-
-  left: 20px;
-  top: -3px;
-
-  width: max-content;
-
-  color: #d9d4e5;
-
-  font-size: 9px;
-  font-weight: 600;
-}
-
-.point-tooltip {
-  display: none;
-
-  position: absolute;
-
-  left: 18px;
-  bottom: 18px;
-
-  width: 130px;
-
-  padding: 10px;
-
-  border: 1px solid var(--border);
-  border-radius: 9px;
-
-  background: #181326;
-
-  box-shadow: var(--shadow);
-}
-
-.chart-point:hover .point-tooltip {
-  display: flex;
-
-  flex-direction: column;
-  gap: 4px;
+  color: #ffffff;
 
   z-index: 10;
 }
 
-.point-tooltip strong {
-  font-size: 10px;
+
+/* =========================================================
+   CHART AREA
+   ========================================================= */
+
+.chart-area-new {
+  position: relative;
+
+  width: calc(100% - 65px);
+  height: calc(100% - 55px);
+
+  margin-left: 50px;
+  margin-top: 5px;
 }
 
-.point-tooltip span {
-  color: var(--muted);
+
+/* =========================================================
+   GRID LINES
+   ========================================================= */
+
+.horizontal-line,
+.vertical-line {
+  position: absolute;
+
+  opacity: 0.35;
+
+  pointer-events: none;
+}
+
+
+/* Horizontal */
+
+.horizontal-line {
+  left: 0;
+  width: 100%;
+
+  border-top: 1px dashed rgba(255, 255, 255, 0.55);
+}
+
+
+/* Vertical */
+
+.vertical-line {
+  top: 0;
+  height: 100%;
+
+  border-left: 1px dashed rgba(255, 255, 255, 0.55);
+}
+
+
+/* Horizontal positions */
+
+.horizontal-line.line-1 {
+  top: 20%;
+}
+
+.horizontal-line.line-2 {
+  top: 40%;
+}
+
+.horizontal-line.line-3 {
+  top: 60%;
+}
+
+.horizontal-line.line-4 {
+  top: 80%;
+}
+
+
+/* Vertical positions */
+
+.vertical-line.line-1 {
+  left: 20%;
+}
+
+.vertical-line.line-2 {
+  left: 40%;
+}
+
+.vertical-line.line-3 {
+  left: 60%;
+}
+
+.vertical-line.line-4 {
+  left: 80%;
+}
+
+
+/* =========================================================
+   AXES
+   ========================================================= */
+
+.x-axis-new {
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+
+.y-axis-new {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  height: 100%;
+
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+
+/* =========================================================
+   CHART POINT
+   ========================================================= */
+
+.chart-point-new {
+  position: absolute;
+
+  transform: translate(-50%, -50%);
+
+  z-index: 20;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   DOT
+   ========================================================= */
+
+.point-dot-new {
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  border: 4px solid #ffffff;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 0 0 5px rgba(255, 255, 255, 0.15),
+    0 0 25px rgba(255, 255, 255, 0.75);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.chart-point-new:hover .point-dot-new {
+  transform: scale(1.35);
+
+  box-shadow:
+    0 0 0 8px rgba(255, 255, 255, 0.18),
+    0 0 35px rgba(255, 255, 255, 0.9);
+}
+
+
+/* =========================================================
+   DIFFERENT POINTS
+   ========================================================= */
+
+.chart-point-new.point-0 .point-dot-new {
+  background: #d21313;
+}
+
+.chart-point-new.point-1 .point-dot-new {
+  background: #ca1992;
+}
+
+.chart-point-new.point-2 .point-dot-new {
+  background: #9ae728;
+  
+}
+
+
+/* =========================================================
+   POINT LABEL
+   ========================================================= */
+
+.point-label-new {
+  position: absolute;
+
+  left: 30px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+
+  min-width: 125px;
+
+  padding: 8px 10px;
+
+  border-radius: 8px;
+
+  background: rgba(20, 17, 35, 0.88);
+
+  backdrop-filter: blur(8px);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  color: white;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: opacity 0.2s ease;
+}
+
+
+.chart-point-new:hover .point-label-new {
+  opacity: 1;
+}
+
+
+.point-label-new strong {
+  font-size: 12px;
+
+  color: white;
+}
+
+
+.point-label-new span {
+  font-size: 10px;
+
+  color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* =========================================================
+   AXIS LABELS
+   ========================================================= */
+
+.x-label-left,
+.x-label-right,
+.y-label-top,
+.y-label-bottom {
+
+  position: absolute;
 
   font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  color: white;
+
+  opacity: 0.9;
 }
 
-/* ================================= */
+
+/* X */
+
+.x-label-left {
+  left: 0;
+  bottom: -28px;
+}
+
+
+.x-label-right {
+  right: 0;
+  bottom: -28px;
+}
+
+
+/* Y */
+
+.y-label-top {
+  left: -38px;
+  top: -5px;
+}
+
+
+.y-label-bottom {
+  left: -38px;
+  bottom: -5px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+  .cost-speed-chart-new {
+    height: 460px;
+  }
+
+  .chart-area-new {
+    width: calc(100% - 45px);
+    margin-left: 40px;
+  }
+
+  .point-label-new {
+    min-width: 100px;
+  }
+
+}
+
 /* SHIPMENT DETAIL                    */
-/* ================================= */
 
 .shipment-panel {
   min-height: 400px;
@@ -1310,10 +1369,7 @@ select:focus-visible {
   font-size: 12px;
 }
 
-/* ================================= */
-/* RECOMMENDATIONS                    */
-/* ================================= */
-
+/* #Recommendations */
 .recommendations-section {
   margin-top: 25px;
 }
@@ -1714,10 +1770,6 @@ td strong {
   letter-spacing: 0.7px;
 }
 
-/* ================================= */
-/* ERROR                              */
-/* ================================= */
-
 .error-banner {
   display: flex;
   align-items: center;
@@ -1763,9 +1815,6 @@ td strong {
   font-size: 9px;
 }
 
-/* ================================= */
-/* LOADING                            */
-/* ================================= */
 
 .loading-screen {
   min-height: 70vh;
@@ -1957,8 +2006,7 @@ td strong {
   opacity: 0.7;
 }
 
-.analytics-button,
-.refresh-button {
+.analytics-button{
   border: none;
   padding: 12px 20px;
   border-radius: 10px;
@@ -1966,7 +2014,7 @@ td strong {
   font-weight: 600;
 }
 
-.analytics-grid {
+.analytics-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
@@ -2072,15 +2120,16 @@ td strong {
 }
 
 @media (max-width: 900px) {
-  .analytics-grid {
+  .analytics-cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 600px) {
-  .analytics-grid {
+  .analytics-cards-grid {
     grid-template-columns: 1fr;
   }
+}
 
   .analytics-header {
     flex-direction: column;
@@ -2092,5 +2141,290 @@ td strong {
   .table-row {
     grid-template-columns: 1fr;
     gap: 5px;
+  }
+.workflow-panel {
+  margin-top: 24px;
+}
+
+.workflow-status {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(153, 144, 199, 0.12);
+  color: #9990c7;
+}
+
+.workflow-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-top: 28px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.workflow-step {
+  position: relative;
+  min-width: 145px;
+  flex: 1;
+  opacity: 0.45;
+  transition: all 0.25s ease;
+}
+
+.workflow-step.active,
+.workflow-step.completed {
+  opacity: 1;
+}
+
+.workflow-node {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  font-size: 15px;
+  font-weight: 800;
+  position: relative;
+  z-index: 2;
+}
+
+.workflow-step.active .workflow-node {
+  border-color: #9990c7;
+  background: rgba(153,144,199,0.15);
+  color: #9990c7;
+  box-shadow: 0 0 20px rgba(153,144,199,0.2);
+}
+
+.workflow-step.completed .workflow-node {
+  border-color: #4ade80;
+  background: rgba(74,222,128,0.1);
+  color: #4ade80;
+}
+
+.workflow-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  padding-right: 15px;
+}
+
+.workflow-content strong {
+  font-size: 11px;
+}
+
+.workflow-content span {
+  font-size: 9px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.workflow-connector {
+  position: absolute;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  top: 19px;
+  left: 38px;
+  right: 0;
+}
+
+.workflow-connector.completed {
+  background: rgba(74,222,128,0.35);
+}
+
+.workflow-context {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.workflow-context div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.workflow-context span {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.8px;
+}
+
+.workflow-context strong {
+  font-size: 12px;
+}
+
+
+
+.feedback-section {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(153,144,199,0.18);
+  background: rgba(153,144,199,0.04);
+}
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.feedback-header h3 {
+  margin: 5px 0;
+}
+
+.feedback-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.feedback-decision-id {
+  font-size: 10px;
+  font-weight: 800;
+  color: #9990c7;
+}
+
+.feedback-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.feedback-actions button {
+  flex: 1;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  transition: transform 0.2s ease;
+}
+
+.feedback-actions button:hover {
+  transform: translateY(-2px);
+}
+
+.feedback-success {
+  background: rgba(74,222,128,0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74,222,128,0.2) !important;
+}
+
+.feedback-failed {
+  background: rgba(248,113,113,0.1);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.2) !important;
+}
+
+
+.outcome-result {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(74,222,128,0.15);
+  background: rgba(74,222,128,0.04);
+}
+
+.outcome-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.outcome-result-header h3 {
+  margin: 5px 0 0;
+}
+
+.outcome-success,
+.outcome-failed {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.outcome-success {
+  color: #4ade80;
+}
+
+.outcome-failed {
+  color: #f87171;
+}
+
+.outcome-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.outcome-metric {
+  padding: 13px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+}
+
+.outcome-metric span {
+  display: block;
+  font-size: 8px;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+.outcome-metric strong {
+  font-size: 13px;
+}
+
+.outcome-note {
+  margin: 15px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+
+.page-screen {
+  padding: 28px 0;
+}
+
+.page-screen .page-heading {
+  margin-bottom: 24px;
+}
+
+.page-screen .recommendation-grid {
+  margin-top: 24px;
+}
+@media (max-width: 900px) {
+  .workflow-container {
+    min-width: 1100px;
+  }
+
+  .workflow-context {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .outcome-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .feedback-actions {
+    flex-direction: column;
+  }
+
+  .outcome-grid {
+    grid-template-columns: 1fr;
   }
 }

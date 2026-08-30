@@ -15,6 +15,7 @@
   padding: 28px 9%;
 
   display: flex;
+
   justify-content: space-between;
   align-items: center;
 
@@ -107,7 +108,7 @@
 
 .summary-card {
   background: white;
-
+  
   border-radius: 12px;
 
   padding: 24px 26px;
@@ -239,7 +240,7 @@
 
   grid-template-columns:
     repeat(3, 1fr);
-
+    
   gap: 24px;
 
   padding: 22px 0;
@@ -297,7 +298,7 @@
   border-top: 1px solid #e5e7eb;
 
   padding-top: 25px;
-
+  
   margin-top: 5px;
 }
 
@@ -322,11 +323,11 @@
 
 .recommendation-grid {
   display: grid;
-
+  
   grid-template-columns:
     repeat(3, 1fr);
-
-  gap: 18px;
+  
+    gap: 18px;
 }
 
 
@@ -336,13 +337,13 @@
 
 .recommendation-card {
   border: 1px solid #e2e8f0;
-
+  
   border-radius: 10px;
-
+  
   padding: 20px;
-
-  background: #fafcff;
-
+  
+  background: #162e3c;
+  
   transition:
     transform 0.2s,
     box-shadow 0.2s;
@@ -350,24 +351,24 @@
 
 .recommendation-card:hover {
   transform: translateY(-3px);
-
+  
   box-shadow:
     0 8px 20px rgba(15, 23, 42, 0.09);
 }
 
 .option {
   font-size: 11px;
-
+ 
   font-weight: 700;
-
+ 
   color: #64748b;
-
+ 
   letter-spacing: 1px;
 }
 
 .recommendation-card h5 {
   font-size: 17px;
-
+ 
   margin: 12px 0 18px;
 }
 
@@ -378,25 +379,25 @@
 
 .recommendation-info {
   display: flex;
-
+ 
   flex-direction: column;
-
+ 
   gap: 10px;
-
+ 
   margin-bottom: 20px;
 }
 
 .recommendation-info div {
   display: flex;
-
+ 
   justify-content: space-between;
-
+ 
   align-items: center;
 }
 
 .recommendation-info span {
-  color: #64748b;
-
+  color: #0f242c;
+ 
   font-size: 13px;
 }
 
@@ -428,23 +429,23 @@
 
 .execute-btn {
   width: 100%;
-
+ 
   background: #111827;
-
+ 
   color: white;
-
+ 
   border: none;
-
+ 
   border-radius: 7px;
-
+ 
   padding: 11px;
-
+ 
   font-size: 12px;
-
+ 
   font-weight: 700;
-
+ 
   cursor: pointer;
-
+ 
   letter-spacing: 0.5px;
 }
 
@@ -459,138 +460,480 @@
 
 .no-recommendations {
   background: #f8fafc;
-
+  
   border: 1px dashed #cbd5e1;
-
+  
   border-radius: 8px;
-
+  
   padding: 20px;
-
+  
   color: #64748b;
-
+  
   text-align: center;
 }
-/* #chartvsspeed representation */
-.cost-speed-chart {
-  width: 100%;
-  height: 420px;
+/* =========================================================
+   COST VS SPEED CHART
+   ========================================================= */
 
+.cost-speed-chart {
+  position: relative;
+  width: 100%;
+  height: 520px;
+
+  /* PASTEL SKY BLUE GRAPH BACKGROUND */
+  background: #36667f;
+
+  border: 1px solid #325a6e;
+  border-radius: 14px;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   CHART AREA
+   ========================================================= */
+
+.chart-area {
+  position: relative;
+
+  width: calc(100% - 75px);
+  height: 390px;
+
+  margin-left: 55px;
+  margin-top: 35px;
+}
+
+
+/* =========================================================
+   GRID LINES
+   ========================================================= */
+
+.grid-line {
+  position: absolute;
+
+  pointer-events: none;
+
+  opacity: 0.55;
+}
+
+.grid-line.horizontal {
+  left: 0;
+
+  width: 100%;
+  height: 1px;
+
+  border-top: 1px dashed rgba(30, 70, 100, 0.25);
+}
+
+.grid-line.horizontal.one {
+  top: 20%;
+}
+
+.grid-line.horizontal.two {
+  top: 40%;
+}
+
+.grid-line.horizontal.three {
+  top: 60%;
+}
+
+.grid-line.horizontal.four {
+  top: 80%;
+}
+
+
+.grid-line.vertical {
+  top: 0;
+
+  height: 100%;
+  width: 1px;
+
+  border-left: 1px dashed rgba(30, 70, 100, 0.25);
+}
+
+.grid-line.vertical.one {
+  left: 20%;
+}
+
+.grid-line.vertical.two {
+  left: 40%;
+}
+
+.grid-line.vertical.three {
+  left: 60%;
+}
+
+.grid-line.vertical.four {
+  left: 80%;
+}
+
+
+/* =========================================================
+   AXES
+   ========================================================= */
+
+.axis-x {
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 2px;
+
+  background: #3b6f91;
+}
+
+.axis-y {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 2px;
+  height: 100%;
+
+  background: #3b6f91;
+}
+
+
+/* =========================================================
+   X / Y LABELS
+   ========================================================= */
+
+.axis-label {
+  position: absolute;
+
+  color: #24516d;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.x-left {
+  left: 0;
+  bottom: -28px;
+}
+
+.x-right {
+  right: 0;
+  bottom: -28px;
+}
+
+.y-top {
+  left: -35px;
+  top: -5px;
+}
+
+.y-bottom {
+  left: -38px;
+  bottom: -5px;
+}
+
+
+/* =========================================================
+   Y AXIS TITLE
+   ========================================================= */
+
+.chart-y-label {
+  position: absolute;
+
+  left: 10px;
+  top: 50%;
+
+  transform: rotate(-90deg) translateX(-50%);
+  transform-origin: left top;
+
+  color: #24516d;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+
+/* =========================================================
+   CHART POINT
+   ========================================================= */
+
+.chart-point {
+  position: absolute;
+
+  width: 28px;
+  height: 28px;
+
+  transform: translate(-50%, -50%);
+
+  z-index: 10;
+}
+
+
+/* =========================================================
+   POINT DOT
+   ========================================================= */
+
+.point-dot {
+  position: relative;
+
+  width: 22px;
+  height: 22px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: #cdc1c1;
+
+  border: 5px solid #2563eb;
+
+  box-shadow:
+    0 0 0 5px rgba(37, 99, 235, 0.20),
+    0 0 22px rgba(37, 99, 235, 0.55);
+}
+
+
+/* =========================================================
+   COLORFUL DOTS
+   ========================================================= */
+
+/* Air Freight */
+.chart-point.point-0 .point-dot {
   background: #ffffff;
 
-  border: 1px solid #e2e8f0;
+  border-color: #2563eb;
 
-  border-radius: 12px;
-
-  padding: 15px;
-
-  margin-top: 20px;
+  box-shadow:
+    0 0 0 5px rgba(37, 99, 235, 0.20),
+    0 0 25px rgba(37, 99, 235, 0.65);
 }
 
-.chart-options {
-  display: grid;
 
-  grid-template-columns:
-    repeat(3, 1fr);
+/* Secondary Supplier */
+.chart-point.point-1 .point-dot {
+  background: #ffffff;
 
-  gap: 15px;
+  border-color: #ec4899;
 
-  margin-top: 20px;
+  box-shadow:
+    0 0 0 5px rgba(236, 72, 153, 0.20),
+    0 0 25px rgba(236, 72, 153, 0.65);
 }
 
-.chart-option {
+
+/* Delay Product Launch */
+.chart-point.point-2 .point-dot {
+  background: #ffffff;
+
+  border-color: #f97316;
+
+  box-shadow:
+    0 0 0 5px rgba(249, 115, 22, 0.20),
+    0 0 25px rgba(249, 115, 22, 0.65);
+}
+
+
+/* =========================================================
+   POINT LABEL
+   ========================================================= */
+
+.point-label {
+  position: absolute;
+
+  left: 32px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  white-space: nowrap;
+
+  color: #173b52;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   TOOLTIP
+   ========================================================= */
+
+.point-tooltip {
+  position: absolute;
+
+  left: 50%;
+  bottom: 38px;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 150px;
+
+  padding: 12px 14px;
+
+  background: #102a3d;
+
+  border: 1px solid #4f88aa;
+
+  border-radius: 9px;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.30);
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+
+  z-index: 100;
+}
+
+.point-tooltip strong {
+  color: #ffffff;
+
+  font-size: 13px;
+
+  margin-bottom: 5px;
+}
+
+.point-tooltip span {
+  color: #c7e7f7;
+
+  font-size: 12px;
+
+  margin-top: 2px;
+}
+
+
+/* SHOW TOOLTIP ON HOVER */
+
+.chart-point:hover .point-tooltip {
+  opacity: 1;
+
+  transform:
+    translateX(-50%)
+    translateY(-4px);
+}
+
+
+/* =========================================================
+   CHART PANEL
+   ========================================================= */
+
+.chart-panel {
+  min-height: 600px;
+
+  min-width: 0;
+}
+
+.chart-panel .panel-header {
+  margin-bottom: 10px;
+}
+
+
+/* =========================================================
+   CHART LEGEND
+   ========================================================= */
+
+.chart-legend {
   display: flex;
 
   align-items: center;
 
-  gap: 12px;
+  gap: 18px;
 
-  padding: 14px;
+  color: #9299aa;
 
-  background: #f8fafc;
-
-  border: 1px solid #e2e8f0;
-
-  border-radius: 8px;
+  font-size: 11px;
 }
 
-.chart-option-number {
-  font-size: 10px;
-
-  font-weight: 700;
-
-  color: #64748b;
-
-  white-space: nowrap;
-}
-
-.chart-option-details {
+.chart-legend span {
   display: flex;
 
-  flex-direction: column;
+  align-items: center;
 
-  gap: 4px;
-
-  flex: 1;
+  gap: 7px;
 }
 
-.chart-option-details strong {
-  font-size: 13px;
+.chart-legend i {
+  width: 8px;
+  height: 8px;
 
-  color: #172033;
+  display: inline-block;
+
+  border-radius: 50%;
 }
 
-.chart-option-details span {
-  font-size: 12px;
 
-  color: #64748b;
+/* Selected = BLUE */
+.legend-purple {
+  background: #2563eb;
+
+  box-shadow:
+    0 0 8px rgba(37, 99, 235, 0.7);
 }
 
-.chart-risk {
-  font-size: 11px;
 
-  font-weight: 700;
+/* Alternatives = PINK */
+.legend-pink {
+  background: #ec4899;
 
-  padding: 5px 8px;
-
-  border-radius: 12px;
+  box-shadow:
+    0 0 8px rgba(236, 72, 153, 0.7);
 }
 
-.chart-risk.low {
-  color: #15803d;
 
-  background: #dcfce7;
-}
-
-.chart-risk.medium {
-  color: #b45309;
-
-  background: #fef3c7;
-}
-
-.chart-risk.high {
-  color: #b91c1c;
-
-  background: #fee2e2;
-}
-
-@media (max-width: 850px) {
-
-  .chart-options {
-    grid-template-columns: 1fr;
-  }
-
-  .cost-speed-chart {
-    height: 350px;
-  }
-
-}
-/* ================================= */
-/* DECISION ANALYTICS LAYOUT         */
-/* ================================= */
+/* =========================================================
+   DECISION ANALYTICS LAYOUT
+   ========================================================= */
 
 .decision-analytics-grid {
   display: grid;
-  grid-template-columns: 1.7fr 1fr;
-  gap: 18px;
-  margin-bottom: 30px;
+
+  grid-template-columns: 1.4fr 0.9fr;
+
+  gap: 20px;
+
+  align-items: stretch;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+  .decision-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-panel {
+    min-height: 560px;
+  }
+
+  .cost-speed-chart {
+    height: 500px;
+  }
+
+  .chart-area {
+    width: calc(100% - 55px);
+
+    height: 370px;
+
+    margin-left: 45px;
+  }
 }

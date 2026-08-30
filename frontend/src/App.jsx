@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import "./index.css";
+import "./App.css";
 
 const API_URL = "http://127.0.0.1:8000";
 const recommendationTemplates = {
@@ -181,12 +181,82 @@ function App() {
   const [activePage, setActivePage] = useState("dashboard");
 
   const [decisions, setDecisions] = useState([]);
+  const [selectedDecision, setSelectedDecision] = useState([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
+  const [feedbackResult, setFeedbackResult] = useState(null);
+  const [workflowStep, setWorkflowStep] = useState(1);
   const [executedOption, setExecutedOption] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [lastExecutedDecision, setLastExecutedDecision] = useState(null);
+const submitFeedback = async (
+  decisionId,
+  outcome,
+  actualCost,
+  actualDelay,
+  success,
+  feedbackNote
+) => {
+  try {
+    console.log("Submitting feedback:", {
+      decision_id: decisionId,
+      outcome,
+      actual_cost: actualCost,
+      actual_delay: actualDelay,
+      success,
+      feedback_note: feedbackNote,
+    });
+
+    const response = await fetch(
+      `${API_URL}/feedback/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          decision_id: decisionId,
+          outcome,
+          actual_cost: actualCost,
+          actual_delay: actualDelay,
+          success,
+          feedback_note: feedbackNote,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("Feedback response status:", response.status);
+    console.log("Feedback recorded:", data);
+
+    setFeedbackResult({
+  outcome,
+  actualCost,
+  actualDelay,
+  success,
+  feedbackNote,
+});
+
+  setWorkflowStep(8);
+
+    if (!response.ok) {
+      throw new Error(
+        typeof data.detail === "string"
+          ? data.detail
+          : JSON.stringify(data.detail) || "Failed to submit feedback"
+      );
+    }
+
+    alert("Feedback recorded successfully!");
+
+  } catch (error) {
+    console.error("Feedback error:", error);
+
+    alert(`Failed to record feedback: ${error.message}`);
+  }
+};
   useEffect(() => {
     loadShipments();
   }, []);
@@ -329,11 +399,13 @@ async function executeDecision(recommendation) {
 
     console.log("Decision executed successfully:", data);
     setLastExecutedDecision({
+      decisionId: data.decision_id,
       shipmentId: selectedShipment.shipment_id,
       recommendation: recommendation.option,
       recommendationId: recommendation.recommendation_id,
     });
-
+    setWorkflowStep(6);
+    setFeedbackResult(null);
     setExecutedOption(recommendation.option);
     await fetchDecisions();
     setTimeout(() => {
@@ -353,16 +425,18 @@ async function executeDecision(recommendation) {
 }
 const totalDecisions = decisions.length;
 
-const successfulDecisions = decisions.filter(
-  (decision) =>
-    decision.status?.toUpperCase() === "EXECUTED"
-).length;
+// const successfulDecisions = decisions.filter(
+//   (decision) =>
+//     decision.status?.toUpperCase() === "EXECUTED"
+// ).length;
 
-const successRate =
-  totalDecisions > 0
-    ? (successfulDecisions / totalDecisions) * 100
-    : 0;
+// const successRate =
+//   totalDecisions > 0
+//     ? (successfulDecisions / totalDecisions) * 100
+//     : 0;
+const successfulDecisions = 0;
 
+const successRate = 0;
 const averagePredictedCost =
   totalDecisions > 0
     ? decisions.reduce(
@@ -371,7 +445,7 @@ const averagePredictedCost =
         0
       ) / totalDecisions
     : 0;
-    const actionCounts = decisions.reduce((acc, decision) => {
+  const actionCounts = decisions.reduce((acc, decision) => {
   const action = decision.selected_action || "Unknown";
 
   acc[action] = (acc[action] || 0) + 1;
@@ -421,7 +495,9 @@ const actionUsage = Object.entries(actionCounts).map(
             className={`nav-item ${
               activePage === "shipments" ? "active" : ""
             }`}
-            onClick={() => setActivePage("shipments")}
+            onClick={() => {setActivePage("shipments");
+              setShowAnalytics(false);}
+            }
           >
             <span className="nav-icon">◈</span>
             <span>Shipments</span>
@@ -431,7 +507,9 @@ const actionUsage = Object.entries(actionCounts).map(
             className={`nav-item ${
               activePage === "recommendations" ? "active" : ""
             }`}
-            onClick={() => setActivePage("recommendations")}
+            onClick={() => {setActivePage("recommendations");
+              setShowAnalytics(false);}
+            }
           >
             <span className="nav-icon">✦</span>
             <span>Prescriptions</span>
@@ -527,6 +605,145 @@ const actionUsage = Object.entries(actionCounts).map(
             <button onClick={loadShipments}>Retry</button>
           </div>
         )}
+        {/* Shipment Monitor */}
+        {activePage === "shipments" && (
+  <section className="page-screen">
+
+    <div className="page-heading">
+      <div>
+        <span className="eyebrow">LIVE OPERATIONS</span>
+
+        <h2>Shipment Monitor</h2>
+
+        <p>
+          Monitor active shipments and identify operational risks.
+        </p>
+      </div>
+    </div>
+
+    <section className="panel shipments-table-panel">
+
+      <div className="panel-header">
+        <div>
+          <span className="eyebrow">LIVE DATA</span>
+          <h3>All Shipments</h3>
+        </div>
+
+        <span className="live-indicator">
+          <i></i> LIVE
+        </span>
+      </div>
+
+      <div className="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment</th>
+              <th>Product</th>
+              <th>Route</th>
+              <th>Quantity</th>
+              <th>Inventory</th>
+              <th>Risk</th>
+              <th>Delivery</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {shipments.map((shipment) => {
+              const risk = getRisk(shipment);
+
+              return (
+                <tr
+                  key={shipment.shipment_id}
+                  onClick={() => {
+                    setSelectedProduct(shipment.product);
+                    setSelectedShipment(shipment);
+                    setActivePage("dashboard");
+                  }}
+                >
+                  <td>
+                    <strong>{shipment.shipment_id}</strong>
+                  </td>
+
+                  <td>{shipment.product}</td>
+
+                  <td>
+                    {shipment.origin} →{" "}
+                    {shipment.destination}
+                  </td>
+
+                  <td>{shipment.quantity}</td>
+
+                  <td>{shipment.inventory_level}</td>
+
+                  <td>
+                    <span
+                      className={`table-risk ${getRiskClass(
+                        risk
+                      )}`}
+                    >
+                      {risk}
+                    </span>
+                  </td>
+
+                  <td>
+                    {formatDate(
+                      shipment.expected_delivery_date
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+  </section>
+)}
+{/* #Recommendation system */}
+{activePage === "recommendations" && (
+  <section className="page-screen">
+
+    <div className="page-heading">
+      <div>
+        <span className="eyebrow">AI PRESCRIPTION</span>
+
+        <h2>Recommended Actions</h2>
+
+        <p>
+          AI-generated recovery options for{" "}
+          <strong>
+            {selectedProduct || "selected product"}
+          </strong>
+        </p>
+      </div>
+
+      <div className="ai-badge">
+        <span>✦</span>
+        AI OPTIMIZED
+      </div>
+    </div>
+
+    <div className="recommendation-grid">
+      {recommendations.map((recommendation, index) => (
+        <RecommendationCard
+          key={recommendation.option}
+          recommendation={recommendation}
+          index={index}
+          selected={index === 0}
+          executed={
+            executedOption === recommendation.option
+          }
+          onExecute={() =>
+            executeDecision(recommendation)
+          }
+        />
+      ))}
+    </div>
+
+  </section>
+)}
       {lastExecutedDecision && (
         <div
         style={{
@@ -652,7 +869,15 @@ const actionUsage = Object.entries(actionCounts).map(
                   online
                 />
               </div>
-
+             <OperationalWorkflow
+  selectedShipment={selectedShipment}
+  selectedRisk={selectedRisk}
+  recommendations={recommendations}
+  lastExecutedDecision={lastExecutedDecision}
+  feedbackResult={feedbackResult}
+  workflowStep={workflowStep}
+  setWorkflowStep={setWorkflowStep}
+/> 
               {/* MAIN ANALYTICS GRID */}
               <div className="analytics-cards-grid decision-analytics-grid">
                 {/* COST SPEED CHART */}
@@ -751,8 +976,134 @@ const actionUsage = Object.entries(actionCounts).map(
                             this shipment.
                           </p>
                         </div>
-                      </div>
-                    </div>
+                        </div>
+                        {lastExecutedDecision && (
+  <div className="feedback-section">
+
+    <div className="feedback-header">
+      <div>
+        <span className="eyebrow">TRACK OUTCOME</span>
+
+        <h3>Decision Feedback</h3>
+
+        <p>
+          Tell us what happened after executing this recommendation.
+        </p>
+      </div>
+
+      <span className="feedback-decision-id">
+        {lastExecutedDecision.decisionId}
+      </span>
+    </div>
+
+    <div className="feedback-actions">
+
+      <button
+        className="feedback-success"
+        onClick={() =>
+          submitFeedback(
+            lastExecutedDecision.decisionId,
+            "COMPLETED",
+            14800,
+            1,
+            true,
+            "Recommendation worked successfully"
+          )
+        }
+      >
+        <span>✓</span>
+        OUTCOME SUCCESSFUL
+      </button>
+
+      <button
+        className="feedback-failed"
+        onClick={() =>
+          submitFeedback(
+            lastExecutedDecision.decisionId,
+            "FAILED",
+            17000,
+            4,
+            false,
+            "Recommendation did not perform as expected"
+          )
+        }
+      >
+        <span>✕</span>
+        OUTCOME FAILED
+      </button>
+
+    </div>
+
+  </div>
+)}
+                      {feedbackResult && (
+  <div className="outcome-result">
+
+    <div className="outcome-result-header">
+      <div>
+        <span className="eyebrow">OUTCOME EVALUATION</span>
+        <h3>Actual vs Predicted</h3>
+      </div>
+
+      <span
+        className={
+          feedbackResult.success
+            ? "outcome-success"
+            : "outcome-failed"
+        }
+      >
+        {feedbackResult.success
+          ? "✓ SUCCESS"
+          : "✕ FAILED"}
+      </span>
+    </div>
+
+    <div className="outcome-grid">
+
+      <div className="outcome-metric">
+        <span>PREDICTED COST</span>
+        <strong>
+          {formatCurrency(
+            recommendations[0]?.cost || 0
+          )}
+        </strong>
+      </div>
+
+      <div className="outcome-metric">
+        <span>ACTUAL COST</span>
+        <strong>
+          {formatCurrency(
+            feedbackResult.actualCost
+          )}
+        </strong>
+      </div>
+
+      <div className="outcome-metric">
+        <span>COST DIFFERENCE</span>
+        <strong>
+          {formatCurrency(
+            feedbackResult.actualCost -
+              (recommendations[0]?.cost || 0)
+          )}
+        </strong>
+      </div>
+
+      <div className="outcome-metric">
+        <span>ACTUAL DELAY</span>
+        <strong>
+          {feedbackResult.actualDelay} days
+        </strong>
+      </div>
+
+    </div>
+
+    <p className="outcome-note">
+      {feedbackResult.feedbackNote}
+    </p>
+
+  </div>
+)}
+                          </div>
                   ) : (
                     <div className="empty-state">
                       Select a product to view shipment details.
@@ -1203,72 +1554,268 @@ function RecommendationCard({
 
 function CostSpeedChart({ recommendations }) {
   const maxCost = Math.max(
-    ...recommendations.map((item) => item.cost),
+    ...recommendations.map((item) => Number(item.cost || 0)),
     1
   );
 
   const maxDelay = Math.max(
-    ...recommendations.map((item) => item.delay),
+    ...recommendations.map((item) => Number(item.delay || 0)),
     1
   );
 
   return (
-    <div className="cost-speed-chart">
-      <div className="chart-y-label">SPEED</div>
+    <div className="cost-speed-chart-new">
 
-      <div className="chart-area">
-        <div className="grid-line horizontal one"></div>
-        <div className="grid-line horizontal two"></div>
-        <div className="grid-line horizontal three"></div>
-        <div className="grid-line horizontal four"></div>
+      {/* Y AXIS TITLE */}
+      <div className="chart-y-title">
+        DELIVERY SPEED
+      </div>
 
-        <div className="grid-line vertical one"></div>
-        <div className="grid-line vertical two"></div>
-        <div className="grid-line vertical three"></div>
-        <div className="grid-line vertical four"></div>
+      {/* CHART */}
+      <div className="chart-area-new">
 
+        {/* GRID */}
+        <div className="horizontal-line line-1"></div>
+        <div className="horizontal-line line-2"></div>
+        <div className="horizontal-line line-3"></div>
+        <div className="horizontal-line line-4"></div>
+
+        <div className="vertical-line line-1"></div>
+        <div className="vertical-line line-2"></div>
+        <div className="vertical-line line-3"></div>
+        <div className="vertical-line line-4"></div>
+
+        {/* AXES */}
+        <div className="x-axis-new"></div>
+        <div className="y-axis-new"></div>
+
+        {/* POINTS */}
         {recommendations.map((item, index) => {
-          const x =
-            10 + (item.cost / maxCost) * 78;
 
+          /*
+            X POSITION
+            Low cost  -> left
+            High cost -> right
+          */
+          const x =
+            8 +
+            (Number(item.cost || 0) / maxCost) * 82;
+
+          /*
+            Y POSITION
+            Low delay  -> top
+            High delay -> bottom
+          */
           const y =
-            90 - (1 - item.delay / maxDelay) * 72;
+            8 +
+            (Number(item.delay || 0) / maxDelay) * 82;
 
           return (
             <div
               key={item.option}
-              className={`chart-point point-${index}`}
+              className={`chart-point-new point-${index}`}
               style={{
-                left: `${Math.min(x, 88)}%`,
-                top: `${Math.max(8, Math.min(y, 88))}%`,
+                left: `${Math.min(x, 92)}%`,
+                top: `${Math.min(y, 92)}%`,
               }}
             >
-              <span className="point-dot"></span>
 
-              <div className="point-tooltip">
+              {/* DOT */}
+              <div className="point-dot-new"></div>
+
+              {/* LABEL */}
+              <div className="point-label-new">
                 <strong>{item.option}</strong>
-                <span>{formatCurrency(item.cost)}</span>
-                <span>{item.delay} days</span>
+
+                <span>
+                  {formatCurrency(item.cost)}
+                </span>
+
+                <span>
+                  {item.delay} days
+                </span>
               </div>
 
-              <span className="point-label">
-                {item.option}
-              </span>
             </div>
           );
         })}
 
-        <div className="axis-x"></div>
-        <div className="axis-y"></div>
+        {/* AXIS LABELS */}
 
-        <span className="axis-label x-left">LOW COST</span>
-        <span className="axis-label x-right">HIGH COST</span>
+        <span className="x-label-left">
+          <p style={{ fontSize: "10px"}}>
+          LOW COST
+          </p>
+        </span>
 
-        <span className="axis-label y-top">FAST</span>
-        <span className="axis-label y-bottom">SLOW</span>
+        <span className="x-label-right">
+          <p style={{ fontSize: "10px"}}>
+          HIGH COST
+          </p>
+        </span>
+
+        <span className="y-label-top">
+          <p style={{ fontSize: "10px"}}>
+          Fast
+          </p>
+        </span>
+
+        <span className="y-label-bottom">
+          <p style={{ fontSize: "10px"}}>
+          Slow
+          </p>
+        </span>
+
       </div>
     </div>
   );
 }
+function OperationalWorkflow({
+  selectedShipment,
+  selectedRisk,
+  recommendations,
+  lastExecutedDecision,
+  feedbackResult,
+  workflowStep,
+  setWorkflowStep,
+}) {
+  const steps = [
+    {
+      number: 1,
+      title: "Alert",
+      description: "Shipment risk detected",
+      icon: "△",
+    },
+    {
+      number: 2,
+      title: "Prediction",
+      description: "Analyze expected impact",
+      icon: "◉",
+    },
+    {
+      number: 3,
+      title: "AI Recommendations",
+      description: "Generate recovery options",
+      icon: "✦",
+    },
+    {
+      number: 4,
+      title: "Compare Options",
+      description: "Compare cost and speed",
+      icon: "◫",
+    },
+    {
+      number: 5,
+      title: "Execute Decision",
+      description: "Select an action",
+      icon: "→",
+    },
+    {
+      number: 6,
+      title: "Confirmation",
+      description: "Decision recorded",
+      icon: "✓",
+    },
+    {
+      number: 7,
+      title: "Track Outcome",
+      description: "Record actual result",
+      icon: "◌",
+    },
+    {
+      number: 8,
+      title: "Measure Impact",
+      description: "Evaluate performance",
+      icon: "▥",
+    },
+  ];
 
+  return (
+    <section className="workflow-panel panel">
+      <div className="panel-header">
+        <div>
+          <span className="eyebrow">OPERATIONAL WORKFLOW</span>
+
+          <h3>Decision Lifecycle</h3>
+
+          <p>
+            Move from shipment alert to measurable business outcome.
+          </p>
+        </div>
+
+        <div className="workflow-status">
+          STEP {workflowStep} / {steps.length}
+        </div>
+      </div>
+
+      <div className="workflow-container">
+        {steps.map((step, index) => {
+          const completed = workflowStep > step.number;
+          const active = workflowStep === step.number;
+
+          return (
+            <div
+              key={step.number}
+              className={`workflow-step ${
+                active ? "active" : ""
+              } ${completed ? "completed" : ""}`}
+            >
+              <div className="workflow-node">
+                {completed ? "✓" : step.icon}
+              </div>
+
+              <div className="workflow-content">
+                <strong>
+                  {step.number}. {step.title}
+                </strong>
+
+                <span>{step.description}</span>
+              </div>
+
+              {index < steps.length - 1 && (
+                <div
+                  className={`workflow-connector ${
+                    completed ? "completed" : ""
+                  }`}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="workflow-context">
+        <div>
+          <span>SHIPMENT</span>
+          <strong>
+            {selectedShipment?.shipment_id || "—"}
+          </strong>
+        </div>
+
+        <div>
+          <span>RISK</span>
+          <strong className={getRiskClass(selectedRisk)}>
+            {selectedRisk}
+          </strong>
+        </div>
+
+        <div>
+          <span>OPTIONS</span>
+          <strong>{recommendations.length}</strong>
+        </div>
+
+        <div>
+          <span>STATUS</span>
+          <strong>
+            {feedbackResult
+              ? "OUTCOME RECORDED"
+              : lastExecutedDecision
+              ? "DECISION EXECUTED"
+              : "AWAITING DECISION"}
+          </strong>
+        </div>
+      </div>
+    </section>
+  );
+}
 export default App;

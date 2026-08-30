@@ -27,3 +27,31 @@ class DecisionResponse(BaseModel):
     selected_action: str
     predicted_cost: float
     predicted_delay: float
+
+class FeedbackCreate(BaseModel):
+    decision_id: str
+    outcome: str
+    actual_cost: Optional[float] = None
+    actual_delay: Optional[float] = None
+    success: bool
+    feedback_note: Optional[str] = None
+
+
+class FeedbackResponse(BaseModel):
+    feedback_id: int
+    decision_id: int
+    outcome: str
+    actual_cost: Optional[float] = None
+    actual_delay: Optional[float] = None
+    success: bool
+    feedback_note: Optional[str] = None
+class OutcomeEvaluationCreate(BaseModel):
+    decision_id: str
+    predicted_cost: float
+    actual_cost: float
+    cost_difference: float
+    predicted_delay: int
+    actual_delay: int
+    delay_difference: int
+    success: bool
+    evaluation_note: str
