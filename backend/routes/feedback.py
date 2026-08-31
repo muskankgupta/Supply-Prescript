@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from backend.database import get_connection
 from backend.models import FeedbackCreate
+from backend.evaluationService import evaluate_outcome
 
 
 router = APIRouter(
@@ -10,6 +11,7 @@ router = APIRouter(
 )
 
 
+# CREATE FEEDBACK + EVALUATE OUTCOME
 @router.post("/")
 def create_feedback(feedback: FeedbackCreate):
 
@@ -19,7 +21,9 @@ def create_feedback(feedback: FeedbackCreate):
     try:
         connection = get_connection()
         cursor = connection.cursor()
-#Actual decision
+
+        # 1. GET ORIGINAL DECISION
+      
         cursor.execute(
             """
             SELECT
@@ -28,39 +32,41 @@ def create_feedback(feedback: FeedbackCreate):
             FROM decisions
             WHERE decision_id = %s
             """,
-            (feedback.decision_id,)
+            (feedback.decision_id,),
         )
 
         decision = cursor.fetchone()
+
         if not decision:
             raise HTTPException(
                 status_code=404,
-                detail=f"Decision {feedback.decision_id} not found"
+                detail=(
+                    f"Decision "
+                    f"{feedback.decision_id} not found"
+                ),
             )
+
         predicted_cost = decision[0]
         predicted_delay = decision[1]
+        # 2. EVALUATE ACTUAL VS PREDICTED OUTCOME
+    
+        try:
 
-        if predicted_cost is None:
+            evaluation = evaluate_outcome(
+                predicted_cost=predicted_cost,
+                actual_cost=feedback.actual_cost,
+                predicted_delay=predicted_delay,
+                actual_delay=feedback.actual_delay,
+            )
+
+        except ValueError as error:
+
             raise HTTPException(
                 status_code=400,
-                detail="Predicted cost is missing for this decision."
+                detail=str(error),
             )
-        if predicted_delay is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Predicted delay is missing for this decision."
-            )
-        #calculate difference
-        cost_difference = (
-            float(feedback.actual_cost)
-            - float(predicted_cost)
-        )
-
-        delay_difference = (
-            int(feedback.actual_delay)
-            - int(predicted_delay)
-        )
-        #Store feedback
+        # 3. STORE FEEDBACK
+    
         cursor.execute(
             """
             INSERT INTO decision_feedback
@@ -72,7 +78,15 @@ def create_feedback(feedback: FeedbackCreate):
                 success,
                 feedback_note
             )
-            VALUES (%s, %s, %s, %s, %s, %s)
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s
+            )
             RETURNING feedback_id
             """,
             (
@@ -84,10 +98,13 @@ def create_feedback(feedback: FeedbackCreate):
                 feedback.feedback_note,
             ),
         )
-#Store outcome evaluation
+
+        feedback_id = cursor.fetchone()[0]
+        # 4. STORE OUTCOME EVALUATION
         cursor.execute(
             """
-            INSERT INTO outcome_evaluations (
+            INSERT INTO outcome_evaluations
+            (
                 decision_id,
                 predicted_cost,
                 actual_cost,
@@ -98,62 +115,98 @@ def create_feedback(feedback: FeedbackCreate):
                 success,
                 evaluation_note
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s
+            )
             """,
             (
                 feedback.decision_id,
-                predicted_cost,
-                feedback.actual_cost,
-                cost_difference,
-                predicted_delay,
-                feedback.actual_delay,
-                delay_difference,
+
+                evaluation["predicted_cost"],
+                evaluation["actual_cost"],
+                evaluation["cost_difference"],
+
+                evaluation["predicted_delay"],
+                evaluation["actual_delay"],
+                evaluation["delay_difference"],
+
                 feedback.success,
                 feedback.feedback_note,
-            )
+            ),
         )
-
+        # 5. COMMIT
+      
         connection.commit()
-
+        # 6. RETURN EVALUATION
+       
         return {
-            "message": "Feedback and outcome evaluation recorded successfully",
+            "message": (
+                "Feedback and outcome "
+                "evaluation recorded successfully"
+            ),
+
+            "feedback_id": feedback_id,
+
             "decision_id": feedback.decision_id,
 
-            "predicted_cost": float(predicted_cost),
-            "actual_cost": float(feedback.actual_cost),
-            "cost_difference": cost_difference,
+            "predicted_cost": (
+                evaluation["predicted_cost"]
+            ),
 
-            "predicted_delay": int(predicted_delay),
-            "actual_delay": int(feedback.actual_delay),
-            "delay_difference": delay_difference,
+            "actual_cost": (
+                evaluation["actual_cost"]
+            ),
+
+            "cost_difference": (
+                evaluation["cost_difference"]
+            ),
+
+            "predicted_delay": (
+                evaluation["predicted_delay"]
+            ),
+
+            "actual_delay": (
+                evaluation["actual_delay"]
+            ),
+
+            "delay_difference": (
+                evaluation["delay_difference"]
+            ),
 
             "success": feedback.success,
         }
-        feedback_id = cursor.fetchone()[0]
-
-        connection.commit()
-
-        return {
-            "message": "Feedback recorded successfully",
-            "feedback_id": feedback_id,
-            "decision_id": feedback.decision_id,
-        }
 
     except HTTPException:
+
         if connection:
             connection.rollback()
+
         raise
 
     except Exception as error:
+
         if connection:
             connection.rollback()
 
-        print("Feedback error:", error)
+        print(
+            "Feedback error:",
+            error,
+        )
 
         raise HTTPException(
             status_code=500,
-            detail=str(error)
+            detail=str(error),
         )
+
     finally:
 
         if cursor:
@@ -162,6 +215,7 @@ def create_feedback(feedback: FeedbackCreate):
         if connection:
             connection.close()
 
+# GET ALL FEEDBACK
 
 @router.get("/")
 def get_feedback():
@@ -170,6 +224,7 @@ def get_feedback():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
@@ -203,11 +258,16 @@ def get_feedback():
             for row in rows
         ]
 
-    except Exception as e:
+    except Exception as error:
+
+        print(
+            "Get feedback error:",
+            error,
+        )
 
         raise HTTPException(
             status_code=500,
-            detail=str(e),
+            detail=str(error),
         )
 
     finally:
