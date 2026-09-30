@@ -171,6 +171,80 @@ function formatCurrency(value) {
 }
 
 function App() {
+  async function submitOutcome() {
+  if (!lastExecutedDecision?.decisionId) {
+    alert("Please execute a decision first.");
+    return;
+  }
+
+  if (!outcomeForm.outcomeStatus) {
+    alert("Please select an outcome status.");
+    return;
+  }
+
+  try {
+    setOutcomeLoading(true);
+
+    const response = await fetch(`${API_URL}/outcomes/`, {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        decision_id: lastExecutedDecision.decisionId,
+        shipment_id: lastExecutedDecision.shipmentId,
+
+        actual_cost:
+          outcomeForm.actualCost === ""
+            ? null
+            : Number(outcomeForm.actualCost),
+
+        actual_delay:
+          outcomeForm.actualDelay === ""
+            ? null
+            : Number(outcomeForm.actualDelay),
+
+        actual_delivery_date:
+          outcomeForm.actualDeliveryDate || null,
+
+        outcome_status: outcomeForm.outcomeStatus,
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("Outcome response:", data);
+
+    if (!response.ok) {
+      throw new Error(
+        typeof data.detail === "string"
+          ? data.detail
+          : "Failed to record actual outcome."
+      );
+    }
+
+    setOutcomeResult(data);
+
+    setWorkflowStep(9);
+
+    alert("Actual outcome recorded successfully.");
+
+  } catch (error) {
+
+    console.error("Outcome submission failed:", error);
+
+    alert(
+      `Failed to record actual outcome: ${error.message}`
+    );
+
+  } finally {
+
+    setOutcomeLoading(false);
+
+  }
+}
   const [shipments, setShipments] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [selectedShipment, setSelectedShipment] = useState(null);
@@ -190,6 +264,15 @@ function App() {
   const [executedOption, setExecutedOption] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [lastExecutedDecision, setLastExecutedDecision] = useState(null);
+  const [outcomeForm, setOutcomeForm] = useState({
+  actualCost: "",
+  actualDelay: "",
+  actualDeliveryDate: "",
+  outcomeStatus: "COMPLETED",
+});
+
+const [outcomeResult, setOutcomeResult] = useState(null);
+const [outcomeLoading, setOutcomeLoading] = useState(false);
 const submitFeedback = async (
   decisionId,
   outcome,
@@ -744,7 +827,7 @@ const actionUsage = Object.entries(actionCounts).map(
 
   </section>
 )}
-      {lastExecutedDecision && (
+      {/* {lastExecutedDecision && (
         <div
         style={{
           marginBottom: "20px",
@@ -791,6 +874,190 @@ const actionUsage = Object.entries(actionCounts).map(
     >
       {lastExecutedDecision.recommendationId}
     </span>
+  </div>
+)} */
+lastExecutedDecision && (
+  <div className="outcome-section">
+
+    <div className="outcome-header">
+
+      <div>
+        <span className="eyebrow">
+          CLOSED LOOP
+        </span>
+
+        <h3>
+          Record Actual Outcome
+        </h3>
+
+        <p>
+          Enter what actually happened after the shipment was completed.
+        </p>
+      </div>
+
+      <span className="outcome-badge">
+        DECISION EXECUTED
+      </span>
+
+    </div>
+
+
+    <div className="outcome-decision-info">
+
+      <div>
+        <span>SHIPMENT</span>
+        <strong>
+          {lastExecutedDecision.shipmentId}
+        </strong>
+      </div>
+
+      <div>
+        <span>DECISION</span>
+        <strong>
+          {lastExecutedDecision.recommendation}
+        </strong>
+      </div>
+
+      <div>
+        <span>DECISION ID</span>
+        <strong>
+          {lastExecutedDecision.decisionId}
+        </strong>
+      </div>
+
+    </div>
+
+
+    <div className="outcome-form">
+
+      <div className="outcome-field">
+
+        <label>
+          ACTUAL COST
+        </label>
+
+        <input
+          type="number"
+          placeholder="e.g. 18000"
+          value={outcomeForm.actualCost}
+          onChange={(event) =>
+            setOutcomeForm({
+              ...outcomeForm,
+              actualCost: event.target.value,
+            })
+          }
+        />
+
+      </div>
+
+
+      <div className="outcome-field">
+
+        <label>
+          ACTUAL DELAY
+        </label>
+
+        <input
+          type="number"
+          placeholder="e.g. 4"
+          value={outcomeForm.actualDelay}
+          onChange={(event) =>
+            setOutcomeForm({
+              ...outcomeForm,
+              actualDelay: event.target.value,
+            })
+          }
+        />
+
+        <span className="field-help">
+          Days
+        </span>
+
+      </div>
+
+
+      <div className="outcome-field">
+
+        <label>
+          ACTUAL DELIVERY DATE
+        </label>
+
+        <input
+          type="date"
+          value={outcomeForm.actualDeliveryDate}
+          onChange={(event) =>
+            setOutcomeForm({
+              ...outcomeForm,
+              actualDeliveryDate: event.target.value,
+            })
+          }
+        />
+
+      </div>
+
+
+      <div className="outcome-field">
+
+        <label>
+          OUTCOME STATUS
+        </label>
+
+        <select
+          value={outcomeForm.outcomeStatus}
+          onChange={(event) =>
+            setOutcomeForm({
+              ...outcomeForm,
+              outcomeStatus: event.target.value,
+            })
+          }
+        >
+
+          <option value="COMPLETED">
+            COMPLETED
+          </option>
+
+          <option value="DELAYED">
+            DELAYED
+          </option>
+
+          <option value="FAILED">
+            FAILED
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <button
+      className="outcome-submit-button"
+      onClick={submitOutcome}
+      disabled={outcomeLoading}
+    >
+
+      {outcomeLoading
+        ? "RECORDING OUTCOME..."
+        : "RECORD ACTUAL OUTCOME →"}
+
+    </button>
+
+
+    {outcomeResult && (
+
+      <div className="outcome-success">
+
+        ✓ Actual outcome recorded successfully.
+
+        <span>
+          Outcome ID: {outcomeResult.outcome_id}
+        </span>
+
+      </div>
+
+    )}
+
   </div>
 )}
         {loading ? (

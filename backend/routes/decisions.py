@@ -1,15 +1,11 @@
 from fastapi import APIRouter, HTTPException
-
 from backend.database import get_connection
 from backend.models import DecisionCreate
-
 
 router = APIRouter(
     prefix="/decisions",
     tags=["Decisions"],
 )
-
-
 @router.get("/")
 def get_decisions():
     connection = None
@@ -18,7 +14,6 @@ def get_decisions():
     try:
         connection = get_connection()
         cursor = connection.cursor()
-
         cursor.execute("""
             SELECT
                 decision_id,
@@ -32,11 +27,8 @@ def get_decisions():
             FROM decisions
             ORDER BY decision_timestamp DESC
         """)
-
         rows = cursor.fetchall()
-
         columns = [description[0] for description in cursor.description]
-
         return [
             dict(zip(columns, row))
             for row in rows

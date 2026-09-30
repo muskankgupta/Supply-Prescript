@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-
+from datetime import date
 
 class DecisionCreate(BaseModel):
     shipment_id: str
@@ -55,3 +55,10 @@ class OutcomeEvaluationCreate(BaseModel):
     delay_difference: int
     success: bool
     evaluation_note: str
+class OutcomeCreate(BaseModel):
+    decision_id: str
+    shipment_id: str
+    actual_cost: Optional[float] = None
+    actual_delay: Optional[int] = None
+    actual_delivery_date: Optional[date] = None
+    outcome_status: str

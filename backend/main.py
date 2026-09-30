@@ -6,8 +6,8 @@ from backend.routes.shipments import router as shipments_router
 from backend.routes.predictions import router as predictions_router
 from backend.routes.recommendations import router as recommendations_router
 from backend.routes.decisions import router as decisions_router
-from backend.feedback import router as feedback_router
-
+from backend.routes.feedback import router as feedback_router
+from backend.routes.outcomes import router as outcomes_router
 app = FastAPI(
     title="Supply Prescript API",
     version="1.0.0",
@@ -34,7 +34,7 @@ app.include_router(predictions_router)
 app.include_router(recommendations_router)
 app.include_router(decisions_router)
 app.include_router(feedback_router)
-
+app.include_router(outcomes_router)
 @app.get("/")
 def root():
     return {
