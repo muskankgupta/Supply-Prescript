@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from backend.models import DecisionRequest, DecisionResponse
 from fastapi.middleware.cors import CORSMiddleware
-
+from backend.routes.evaluation import router as evaluation_router
 from backend.routes.shipments import router as shipments_router
 from backend.routes.predictions import router as predictions_router
 from backend.routes.recommendations import router as recommendations_router
@@ -28,7 +28,7 @@ app.add_middleware(
 )
 
 
-
+app.include_router(evaluation_router)
 app.include_router(shipments_router)
 app.include_router(predictions_router)
 app.include_router(recommendations_router)

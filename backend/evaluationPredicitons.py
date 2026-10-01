@@ -6,7 +6,14 @@ def calculate_percentage_error(actual, predicted):
         return 0
 
     return abs(actual - predicted) / actual * 100
+SUCCESS_THRESHOLD = 20.0
 
+
+def is_successful(cost_error, delay_error):
+    return (
+        cost_error <= SUCCESS_THRESHOLD
+        and delay_error <= SUCCESS_THRESHOLD
+    )
 
 def evaluate_decision(decision_id):
 
@@ -56,25 +63,30 @@ def evaluate_decision(decision_id):
             actual_delay,
             predicted_delay
         )
-
+        successful = is_successful(
+            cost_percentage_error,
+            delay_percentage_error
+        )
         cursor.execute(
-            """
-            INSERT INTO decision_evaluations
+    """
+    INSERT INTO decision_evaluations
+    (
+        decision_id,
+        cost_difference,
+        delay_difference,
+        cost_percentage_error,
+        delay_percentage_error,
+        successful
+    )
+    VALUES (%s, %s, %s, %s, %s,%s)
+    """,
             (
                 decision_id,
                 cost_difference,
                 delay_difference,
                 cost_percentage_error,
-                delay_percentage_error
-            )
-            VALUES (%s, %s, %s, %s, %s)
-            """,
-            (
-                decision_id,
-                cost_difference,
-                delay_difference,
-                cost_percentage_error,
-                delay_percentage_error
+                delay_percentage_error,
+                successful
             )
         )
 
@@ -97,7 +109,7 @@ def evaluate_decision(decision_id):
         print(f"Actual Delay      : {actual_delay:.2f} days")
         print(f"Difference        : {delay_difference:.2f} days")
         print(f"Percentage Error  : {delay_percentage_error:.2f}%")
-
+        print(f"Decision Result  : {'SUCCESSFUL' if successful else 'UNSUCCESSFUL'}")
         print("\n===================================")
 
     except Exception as e:
