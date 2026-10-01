@@ -55,10 +55,15 @@ class OutcomeEvaluationCreate(BaseModel):
     delay_difference: int
     success: bool
     evaluation_note: str
+
+
 class OutcomeCreate(BaseModel):
-    decision_id: str
-    shipment_id: str
+    decision_id: int
+    shipment_id: Optional[int] = None
+
     actual_cost: Optional[float] = None
-    actual_delay: Optional[int] = None
-    actual_delivery_date: Optional[date] = None
-    outcome_status: str
+    actual_delay: Optional[float] = None
+
+    actual_delivery_date: Optional[str] = None
+
+    outcome_status: Optional[str] = None

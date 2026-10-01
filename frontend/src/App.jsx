@@ -185,6 +185,50 @@ function App() {
   try {
     setOutcomeLoading(true);
 
+    // -----------------------------------------
+    // IMPORTANT:
+    // decision_id is STRING such as D035
+    // Do NOT use Number()
+    // -----------------------------------------
+
+    const payload = {
+      decision_id: String(lastExecutedDecision.decisionId),
+
+      shipment_id:
+        lastExecutedDecision.shipmentId !== null &&
+        lastExecutedDecision.shipmentId !== undefined
+          ? lastExecutedDecision.shipmentId
+          : null,
+
+      actual_cost:
+        outcomeForm.actualCost === ""
+          ? null
+          : Number(outcomeForm.actualCost),
+
+      actual_delay:
+        outcomeForm.actualDelay === ""
+          ? null
+          : Number(outcomeForm.actualDelay),
+
+      actual_delivery_date:
+        outcomeForm.actualDeliveryDate || null,
+
+      outcome_status:
+        outcomeForm.outcomeStatus || null,
+    };
+
+    console.log("=================================");
+    console.log("SUBMITTING ACTUAL OUTCOME");
+    console.log("=================================");
+    console.log("Payload:", payload);
+    console.log("Decision ID:", payload.decision_id);
+    console.log("Decision ID type:", typeof payload.decision_id);
+    console.log("=================================");
+
+    // -----------------------------------------
+    // Send outcome to backend
+    // -----------------------------------------
+
     const response = await fetch(`${API_URL}/outcomes/`, {
       method: "POST",
 
@@ -192,57 +236,52 @@ function App() {
         "Content-Type": "application/json",
       },
 
-      body: JSON.stringify({
-        decision_id: lastExecutedDecision.decisionId,
-        shipment_id: lastExecutedDecision.shipmentId,
-
-        actual_cost:
-          outcomeForm.actualCost === ""
-            ? null
-            : Number(outcomeForm.actualCost),
-
-        actual_delay:
-          outcomeForm.actualDelay === ""
-            ? null
-            : Number(outcomeForm.actualDelay),
-
-        actual_delivery_date:
-          outcomeForm.actualDeliveryDate || null,
-
-        outcome_status: outcomeForm.outcomeStatus,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
 
-    console.log("Outcome response:", data);
+    console.log("=================================");
+    console.log("OUTCOME API RESPONSE");
+    console.log("Status:", response.status);
+    console.log("Data:", data);
+    console.log("=================================");
 
     if (!response.ok) {
       throw new Error(
         typeof data.detail === "string"
           ? data.detail
-          : "Failed to record actual outcome."
+          : JSON.stringify(data.detail) ||
+            "Failed to record actual outcome."
       );
     }
 
+    // -----------------------------------------
+    // Success
+    // -----------------------------------------
+
     setOutcomeResult(data);
 
-    setWorkflowStep(9);
+    // Refresh KPI values
+    await fetchKPIs();
+
+    // Move workflow forward
+    setWorkflowStep(8);
 
     alert("Actual outcome recorded successfully.");
 
   } catch (error) {
-
-    console.error("Outcome submission failed:", error);
+    console.error(
+      "Outcome submission failed:",
+      error
+    );
 
     alert(
       `Failed to record actual outcome: ${error.message}`
     );
 
   } finally {
-
     setOutcomeLoading(false);
-
   }
 }
   const [shipments, setShipments] = useState([]);
@@ -258,7 +297,15 @@ function App() {
   const [selectedDecision, setSelectedDecision] = useState([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-
+  const [kpis, setKpis] = useState({
+  total_decisions: 0,
+  evaluated_decisions: 0,
+  successful_decisions: 0,
+  success_rate: 0,
+  average_predicted_cost: 0,
+  average_cost_error: 0,
+  average_delay_error: 0,
+});
   const [feedbackResult, setFeedbackResult] = useState(null);
   const [workflowStep, setWorkflowStep] = useState(1);
   const [executedOption, setExecutedOption] = useState(null);
@@ -344,6 +391,7 @@ const submitFeedback = async (
     loadShipments();
   }, []);
   async function fetchDecisions() {
+    
   try {
     setAnalyticsLoading(true);
 
@@ -363,6 +411,24 @@ const submitFeedback = async (
     console.error("Failed to load decisions:", error);
   } finally {
     setAnalyticsLoading(false);
+  }
+}
+async function fetchKPIs() {
+  try {
+    const response = await fetch(`${API_URL}/evaluation/kpis`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch KPI data");
+    }
+
+    const data = await response.json();
+
+    console.log("KPIs received:", data);
+
+    setKpis(data);
+
+  } catch (error) {
+    console.error("Failed to load KPIs:", error);
   }
 }
   async function loadShipments() {
@@ -411,6 +477,7 @@ const submitFeedback = async (
     useEffect(() => {
       if (showAnalytics) {
         fetchDecisions();
+        fetchKPIs();
   }
 }, [showAnalytics]);
   useEffect(() => {
@@ -445,12 +512,17 @@ async function executeDecision(recommendation) {
   try {
     setError("");
 
-    console.log("Executing decision:", {
+    console.log("=================================");
+    console.log("EXECUTING DECISION");
+    console.log({
       shipment_id: selectedShipment.shipment_id,
       product: selectedShipment.product,
       recommendation_id: recommendation.recommendation_id,
       selected_action: recommendation.option,
+      predicted_cost: recommendation.cost,
+      predicted_delay: recommendation.delay,
     });
+    console.log("=================================");
 
     const response = await fetch(`${API_URL}/decisions/`, {
       method: "POST",
@@ -469,33 +541,81 @@ async function executeDecision(recommendation) {
 
     const data = await response.json();
 
-    console.log("Decision API status:", response.status);
-    console.log("Decision API response:", data);
+    console.log("=================================");
+    console.log("DECISION API RESPONSE");
+    console.log("Status:", response.status);
+    console.log("Data:", data);
+    console.log("=================================");
 
     if (!response.ok) {
       throw new Error(
         typeof data.detail === "string"
           ? data.detail
-          : JSON.stringify(data.detail) || "Failed to execute decision."
+          : JSON.stringify(data.detail) ||
+            "Failed to execute decision."
       );
     }
 
-    console.log("Decision executed successfully:", data);
+    // -----------------------------------------
+    // Get the decision ID returned by backend
+    // -----------------------------------------
+
+    const decisionId =
+      data.decision_id ??
+      data.id ??
+      data.decisionId;
+
+    console.log("DECISION ID RECEIVED:", decisionId);
+
+    // -----------------------------------------
+    // Validate decision ID
+    // -----------------------------------------
+
+    if (
+      decisionId === undefined ||
+      decisionId === null ||
+      decisionId === ""
+    ) {
+      console.error(
+        "Backend did not return a decision ID.",
+        data
+      );
+
+      throw new Error(
+        "Backend did not return decision_id."
+      );
+    }
+
+    // -----------------------------------------
+    // Store executed decision
+    // -----------------------------------------
+
     setLastExecutedDecision({
-      decisionId: data.decision_id,
+      decisionId: decisionId,
       shipmentId: selectedShipment.shipment_id,
       recommendation: recommendation.option,
       recommendationId: recommendation.recommendation_id,
     });
+
+    console.log("=================================");
+    console.log("LAST EXECUTED DECISION");
+    console.log({
+      decisionId: decisionId,
+      shipmentId: selectedShipment.shipment_id,
+      recommendation: recommendation.option,
+    });
+    console.log("=================================");
+
     setWorkflowStep(6);
     setFeedbackResult(null);
     setExecutedOption(recommendation.option);
+
     await fetchDecisions();
+
     setTimeout(() => {
       setExecutedOption(null);
     }, 3000);
 
-    // Refresh shipment/dashboard data
     await loadShipments();
 
   } catch (err) {
@@ -506,28 +626,13 @@ async function executeDecision(recommendation) {
     );
   }
 }
-const totalDecisions = decisions.length;
+const totalDecisions = kpis.total_decisions;
 
-// const successfulDecisions = decisions.filter(
-//   (decision) =>
-//     decision.status?.toUpperCase() === "EXECUTED"
-// ).length;
+const successfulDecisions = kpis.successful_decisions;
 
-// const successRate =
-//   totalDecisions > 0
-//     ? (successfulDecisions / totalDecisions) * 100
-//     : 0;
-const successfulDecisions = 0;
+const successRate = kpis.success_rate;
 
-const successRate = 0;
-const averagePredictedCost =
-  totalDecisions > 0
-    ? decisions.reduce(
-        (sum, decision) =>
-          sum + Number(decision.predicted_cost || 0),
-        0
-      ) / totalDecisions
-    : 0;
+const averagePredictedCost = kpis.average_predicted_cost;
   const actionCounts = decisions.reduce((acc, decision) => {
   const action = decision.selected_action || "Unknown";
 
@@ -1506,7 +1611,10 @@ lastExecutedDecision && (
       </div>
 
       <button
-        onClick={fetchDecisions}
+        onClick={() => {
+  fetchDecisions();
+  fetchKPIs();
+}}
         className="refresh-button"
         disabled={analyticsLoading}
       >
@@ -1518,12 +1626,27 @@ lastExecutedDecision && (
     {/* KPI CARDS */}
 
     <div className="analytics-grid">
+      <div className="analytics-card">
+  <span>Average Cost Error</span>
+  <strong>
+    {kpis.average_cost_error.toFixed(1)}%
+  </strong>
+</div>
 
+<div className="analytics-card">
+  <span>Average Delay Error</span>
+  <strong>
+    {kpis.average_delay_error.toFixed(1)}%
+  </strong>
+</div>
       <div className="analytics-card">
         <span>Total Decisions</span>
         <strong>{totalDecisions}</strong>
       </div>
-
+    <div className="analytics-card">
+  <span>Evaluated Decisions</span>
+  <strong>{kpis.evaluated_decisions}</strong>
+</div>
       <div className="analytics-card">
         <span>Successful Decisions</span>
         <strong>{successfulDecisions}</strong>
@@ -1540,7 +1663,7 @@ lastExecutedDecision && (
         <span>Average Predicted Cost</span>
         <strong>
           ${averagePredictedCost.toLocaleString(
-            undefined,
+            "en-IN",
             {
               maximumFractionDigits: 0,
             }
